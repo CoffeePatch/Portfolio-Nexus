@@ -1,0 +1,116 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.4
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.4
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      # THE CORRECT, SIMPLE LISTENER CONFIGURATION
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  mysql:
+    image: mysql:8.3.0
+    container_name: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "password"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  authservice:
+    build: ./authservice
+    container_name: authservice
+    restart: on-failure
+    ports:
+      - "9898:9898"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_DB: authservice
+      MYSQL_USER: root
+      MYSQL_PASSWORD: password
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 9092 # <-- USE THE STANDARD KAFKA PORT
+
+  userservice:
+    build: ./userservice
+    container_name: userservice
+    restart: on-failure
+    ports:
+      - "9810:9810"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_DB: userservice
+      MYSQL_USER: root
+      MYSQL_PASSWORD: password
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 9092 # <-- USE THE STANDARD KAFKA PORT
+
+  portfolioservice:
+    build: ./portfolioService
+    container_name: portfolioservice
+    restart: on-failure
+    ports:
+      - "9811:9811"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_DB: portfolioservice
+      MYSQL_USER: root
+      MYSQL_PASSWORD: password
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 9092
+
+
+
+  marketdataservice: # <- THIS MUST BE PRESENT!
+    build: ./marketDataService
+    container_name: marketdataservice
+    restart: on-failure
+    ports:
+      - "8010:8010"
+    environment:
+      OPENAI_API_KEY: your_actual_api_key
+      KAFKA_HOST: kafka
+      KAFKA_PORT: 9092
+      FINNHUB_API_KEY: "d4278j9r01qreojp3oqgd4278j9r01qreojp3or0"
+      FINNHUB_SECRET_KEY: "d4278j9r01qreojp3os0"
+      #All requests' header made from our server will contain field "X-Finnhub-Secret": "FINNHUB_SECRET_KEY" for authentication. To acknowledge receipt of an event, your endpoint must return a 2xx HTTP status code. Acknowledge events prior to any logic that needs to take place to prevent timeouts. Your endpoint is disabled if it fails to acknowledge events over consecutive days.
+volumes:
+  mysql-data:
