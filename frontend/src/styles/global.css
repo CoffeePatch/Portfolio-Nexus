@@ -20,7 +20,7 @@ body {
 
 #root {
   min-height: 100vh;
-  display: flex;
+  width: 100%;
 }
 
 /* Hide scrollbar for carousel components while maintaining scroll functionality */
