@@ -8,7 +8,7 @@ from .clients.metals_client import get_gold_price, get_silver_price
 
 app = Flask(__name__)
 # Allow requests from our frontend
-CORS(app, origins="http://localhost:5173")
+CORS(app, origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"])
 
 @app.route('/', methods=['GET'])
 def handle_get():

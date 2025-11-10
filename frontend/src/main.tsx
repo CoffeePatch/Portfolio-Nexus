@@ -16,6 +16,8 @@ import Market from "./pages/Market";
 import Portfolio from "./pages/Portfolio";
 import Support from "./pages/Support";
 import Login from "./pages/Login";
+import Expenses from "./pages/Expenses";
+import Transactions from "./pages/Transactions";
 import { AuthProvider } from "./providers/AuthProvider";
 import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 
@@ -36,6 +38,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Dashboard /> },
       { path: "portfolio", element: <Portfolio /> },
+      { path: "expenses", element: <Expenses /> },
+      { path: "transactions", element: <Transactions /> },
       { path: "analysis", element: <Analysis /> },
       { path: "market", element: <Market /> },
       { path: "community", element: <Community /> },

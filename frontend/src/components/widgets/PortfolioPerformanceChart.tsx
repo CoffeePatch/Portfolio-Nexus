@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Area,
   AreaChart,
@@ -9,13 +10,7 @@ import {
 } from "recharts";
 import { usePortfolioHistory } from "../../hooks/usePortfolioHistory";
 
-/**
- * NOTE: This component uses mock historical data via usePortfolioHistory.
- * The backend portfolioService does not currently store historical portfolio snapshots.
- * Future enhancement: Add portfolio_history table and tracking to portfolioService.
- */
-
-const timeFilters = ["1D", "1W", "1M", "6M", "1Y"] as const;
+const timeFilters = ["1W", "1M", "6M", "1Y"] as const;
 
 const SkeletonLoader = () => (
   <div className="animate-pulse space-y-4">
@@ -109,10 +104,11 @@ interface PortfolioPerformanceChartProps {
 export const PortfolioPerformanceChart = ({
   className = "",
 }: PortfolioPerformanceChartProps) => {
-  const { data, isLoading, isError, error } = usePortfolioHistory();
+  const [period, setPeriod] = useState("1M");
+  const { data, isLoading, isError, error } = usePortfolioHistory(period);
 
   // Force proper grid span by ensuring the className is always applied
-  const containerClassName = `rounded-2xl border border-slate-800 bg-black p-6 ${className}`.trim();
+  const containerClassName = `group relative overflow-hidden rounded-2xl border border-slate-800/50 bg-gradient-to-br from-[#000000] via-[#0a0a0a] to-[#000000] p-8 shadow-2xl ${className}`.trim();
 
   // Show loading skeleton
   if (isLoading) {
@@ -138,8 +134,13 @@ export const PortfolioPerformanceChart = ({
   if (!data || data.length === 0) {
     return (
       <div className={containerClassName}>
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-100">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 ring-1 ring-green-500/30">
+            <span className="material-symbols-outlined text-3xl text-green-400" style={{ fontVariationSettings: "'FILL' 1, 'wght' 300" }}>
+              insights
+            </span>
+          </div>
+          <h2 className="text-xl font-bold tracking-tight text-white">
             Portfolio Performance
           </h2>
         </div>
@@ -150,23 +151,37 @@ export const PortfolioPerformanceChart = ({
 
   return (
     <div className={containerClassName}>
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+      
       {/* Header with Title and Time Filters */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-lg font-semibold text-slate-100">
-          Portfolio Performance
-        </h2>
+      <div className="relative mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 ring-1 ring-green-500/30">
+            <span className="material-symbols-outlined text-3xl text-green-400" style={{ fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 48" }}>
+              insights
+            </span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-white">
+              Portfolio Performance
+            </h2>
+            <p className="text-sm text-slate-500">Track your wealth over time</p>
+          </div>
+        </div>
 
         {/* Time Filter Buttons */}
         <div className="flex flex-wrap gap-2">
-          {timeFilters.map((filter, index) => (
+          {timeFilters.map((filter) => (
             <button
               key={filter}
               type="button"
+              onClick={() => setPeriod(filter)}
               className={[
-                "rounded-lg px-4 py-2 text-sm font-medium transition",
-                index === 2 // Highlight "1M" by default
-                  ? "bg-indigo-500/20 text-indigo-200 ring-1 ring-inset ring-indigo-400"
-                  : "bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white",
+                "rounded-lg px-5 py-2.5 text-sm font-bold transition-all",
+                period === filter
+                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30 ring-1 ring-indigo-400/50"
+                  : "border border-slate-800/50 bg-slate-900/30 text-slate-300 hover:border-slate-700/50 hover:bg-slate-900/50 hover:text-white",
               ].join(" ")}
             >
               {filter}
@@ -176,7 +191,7 @@ export const PortfolioPerformanceChart = ({
       </div>
 
       {/* Chart - wrapped in div to ensure proper width calculation */}
-      <div className="w-full min-w-0">
+      <div className="relative w-full min-w-0">
         <ResponsiveContainer width="100%" height={320} debounce={1}>
           <AreaChart
             data={data}
@@ -184,7 +199,7 @@ export const PortfolioPerformanceChart = ({
           >
           <defs>
             <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
               <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
             </linearGradient>
           </defs>
@@ -192,14 +207,14 @@ export const PortfolioPerformanceChart = ({
           <CartesianGrid
             strokeDasharray="3 3"
             stroke="#334155"
-            strokeOpacity={0.3}
+            strokeOpacity={0.2}
             vertical={false}
           />
 
           <XAxis
             dataKey="date"
             stroke="#64748b"
-            style={{ fontSize: "12px" }}
+            style={{ fontSize: "12px", fontWeight: "600" }}
             tickLine={false}
             axisLine={false}
             interval="preserveStartEnd"
@@ -208,7 +223,7 @@ export const PortfolioPerformanceChart = ({
 
           <YAxis
             stroke="#64748b"
-            style={{ fontSize: "12px" }}
+            style={{ fontSize: "12px", fontWeight: "600" }}
             tickLine={false}
             axisLine={false}
             tickFormatter={(value) =>
@@ -217,13 +232,13 @@ export const PortfolioPerformanceChart = ({
             width={45}
           />
 
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#6366f1", strokeWidth: 1 }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#6366f1", strokeWidth: 2 }} />
 
           <Area
             type="monotone"
             dataKey="value"
             stroke="#6366f1"
-            strokeWidth={2}
+            strokeWidth={3}
             fill="url(#colorValue)"
             animationDuration={1000}
           />

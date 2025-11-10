@@ -1,4 +1,5 @@
-# React Query Integration - Quick Reference
+#
+ React Query Integration - Quick Reference
 
 ## 🎯 How to Use These Hooks in Components
 

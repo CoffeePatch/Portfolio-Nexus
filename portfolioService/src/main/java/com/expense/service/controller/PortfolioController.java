@@ -7,13 +7,16 @@ import com.expense.service.dto.StockHoldingRequestDto;
 import com.expense.service.entities.CryptoHolding;
 import com.expense.service.entities.ManualHolding;
 import com.expense.service.entities.MutualFundHolding;
+import com.expense.service.entities.PortfolioHistory;
 import com.expense.service.entities.StockHolding;
+import com.expense.service.repository.PortfolioHistoryRepository;
 import com.expense.service.service.PortfolioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -21,10 +24,12 @@ import java.util.List;
 public class PortfolioController {
 
     private final PortfolioService portfolioService;
+    private final PortfolioHistoryRepository portfolioHistoryRepository;
 
     @Autowired
-    public PortfolioController(PortfolioService portfolioService) {
+    public PortfolioController(PortfolioService portfolioService, PortfolioHistoryRepository portfolioHistoryRepository) {
         this.portfolioService = portfolioService;
+        this.portfolioHistoryRepository = portfolioHistoryRepository;
     }
 
     // Stock Holding Endpoints
@@ -121,5 +126,22 @@ public class PortfolioController {
             @PathVariable String externalId) {
         portfolioService.deleteManualHolding(externalId, userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    // Portfolio History Endpoint
+    @GetMapping("/history")
+    public ResponseEntity<List<PortfolioHistory>> getPortfolioHistory(
+            @RequestHeader("X-User-Id") String userId,
+            @RequestParam(defaultValue = "1M") String period) {
+
+        LocalDate startDate = switch (period) {
+            case "1W" -> LocalDate.now().minusWeeks(1);
+            case "6M" -> LocalDate.now().minusMonths(6);
+            case "1Y" -> LocalDate.now().minusYears(1);
+            default -> LocalDate.now().minusMonths(1); // 1M
+        };
+
+        List<PortfolioHistory> history = portfolioHistoryRepository.findByUserIdAndSnapshotDateAfter(userId, startDate);
+        return new ResponseEntity<>(history, HttpStatus.OK);
     }
 }

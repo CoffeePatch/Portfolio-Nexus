@@ -9,24 +9,34 @@ export const RecentTransactions = ({ className }: RecentTransactionsProps) => {
 
   return (
     <div
-      className={`rounded-2xl border border-slate-800 bg-black p-6 ${className || ""}`}
+      className={`group relative overflow-hidden rounded-2xl border border-slate-800/50 bg-gradient-to-br from-[#000000] via-[#0a0a0a] to-[#000000] p-6 shadow-2xl ${className || ""}`}
     >
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+      
       {/* Header */}
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-slate-100">
-          Recent Transactions
-        </h2>
-        <p className="text-sm text-slate-400">
-          Your latest expenses and asset purchases
-        </p>
+      <div className="relative mb-6 flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 ring-1 ring-cyan-500/30">
+          <span className="material-symbols-outlined text-3xl text-cyan-400" style={{ fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 48" }}>
+            receipt_long
+          </span>
+        </div>
+        <div>
+          <h2 className="text-xl font-bold tracking-tight text-white">
+            Recent Transactions
+          </h2>
+          <p className="text-sm text-slate-500">
+            Latest expenses and purchases
+          </p>
+        </div>
       </div>
 
       {/* Loading State */}
       {isLoading && (
-        <div className="space-y-3">
+        <div className="relative space-y-3">
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="flex items-center gap-3 animate-pulse">
-              <div className="h-10 w-10 rounded-full bg-slate-800" />
+              <div className="h-12 w-12 rounded-xl bg-slate-800" />
               <div className="flex-1">
                 <div className="h-4 w-3/4 bg-slate-800 rounded mb-2" />
                 <div className="h-3 w-1/2 bg-slate-800 rounded" />
@@ -39,24 +49,13 @@ export const RecentTransactions = ({ className }: RecentTransactionsProps) => {
 
       {/* Empty State */}
       {!isLoading && transactions.length === 0 && (
-        <div className="py-12 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-800">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-8 w-8 text-slate-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+        <div className="relative py-12 text-center">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50">
+            <span className="material-symbols-outlined text-5xl text-slate-600" style={{ fontVariationSettings: "'FILL' 0" }}>
+              receipt_long
+            </span>
           </div>
-          <h3 className="mb-2 text-lg font-semibold text-slate-300">
+          <h3 className="mb-2 text-lg font-bold text-slate-300">
             No transactions yet
           </h3>
           <p className="text-sm text-slate-500">
@@ -67,72 +66,54 @@ export const RecentTransactions = ({ className }: RecentTransactionsProps) => {
 
       {/* Transaction List */}
       {!isLoading && transactions.length > 0 && (
-        <div className="space-y-3">
+        <div className="relative space-y-3">
           {transactions.slice(0, 10).map((transaction) => (
             <div
               key={transaction.id}
-              className="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-900/50 p-3 transition-colors hover:bg-slate-900"
+              className="group/item flex items-center gap-4 rounded-xl border border-slate-800/50 bg-gradient-to-r from-slate-900/30 to-transparent p-4 transition-all hover:border-slate-700/50 hover:bg-slate-900/50"
             >
               {/* Icon */}
               <div
-                className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${
+                className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl ring-1 transition-all ${
                   transaction.type === "expense"
-                    ? "bg-red-500/10"
-                    : "bg-blue-500/10"
+                    ? "bg-gradient-to-br from-red-500/20 to-red-600/20 ring-red-500/30"
+                    : "bg-gradient-to-br from-blue-500/20 to-blue-600/20 ring-blue-500/30"
                 }`}
               >
-                {transaction.type === "expense" ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-red-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-blue-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                    />
-                  </svg>
-                )}
+                <span 
+                  className={`material-symbols-outlined text-2xl ${
+                    transaction.type === "expense" ? "text-red-400" : "text-blue-400"
+                  }`}
+                  style={{ fontVariationSettings: "'FILL' 1, 'wght' 300" }}
+                >
+                  {transaction.type === "expense" ? "credit_card" : "trending_up"}
+                </span>
               </div>
 
               {/* Description and Date */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-200 truncate">
+                <p className="text-sm font-bold text-white truncate">
                   {transaction.description}
                 </p>
-                <p className="text-xs text-slate-500">
-                  {new Date(transaction.date).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="material-symbols-outlined text-xs text-slate-600" style={{ fontVariationSettings: "'FILL' 1" }}>
+                    schedule
+                  </span>
+                  <p className="text-xs font-medium text-slate-500">
+                    {new Date(transaction.date).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
               </div>
 
               {/* Amount */}
               <div className="flex-shrink-0">
                 <p
-                  className={`text-sm font-semibold ${
-                    transaction.amount < 0 ? "text-red-500" : "text-green-500"
+                  className={`text-lg font-bold ${
+                    transaction.amount < 0 ? "text-red-400" : "text-green-400"
                   }`}
                 >
                   {transaction.amount < 0 ? "-" : "+"}$
@@ -145,7 +126,7 @@ export const RecentTransactions = ({ className }: RecentTransactionsProps) => {
           {/* Show More Indicator */}
           {transactions.length > 10 && (
             <div className="pt-2 text-center">
-              <p className="text-xs text-slate-500">
+              <p className="text-xs font-medium text-slate-500">
                 Showing 10 of {transactions.length} transactions
               </p>
             </div>

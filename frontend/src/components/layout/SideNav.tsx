@@ -1,15 +1,16 @@
 import { NavLink } from "react-router-dom";
 
 const navItems = [
-  { label: "Dashboard", to: "/" },
-  { label: "Portfolio", to: "/portfolio" },
-  { label: "Analysis", to: "/analysis" },
-  { label: "Market", to: "/market" },
+  { label: "Dashboard", to: "/", icon: "dashboard" },
+  { label: "Portfolio", to: "/portfolio", icon: "account_balance" },
+  { label: "Expenses", to: "/expenses", icon: "payments" },
+  { label: "Transactions", to: "/transactions", icon: "receipt_long" },
+  { label: "Analysis", to: "/analysis", icon: "analytics" },
 ];
 
 const supportItems = [
-  { label: "Community", to: "/community" },
-  { label: "Help & Support", to: "/support" },
+  { label: "Community", to: "/community", icon: "groups" },
+  { label: "Help & Support", to: "/support", icon: "help" },
 ];
 
 type SideNavProps = {
@@ -65,8 +66,8 @@ export const SideNav = ({ isMobileOpen, onClose }: SideNavProps) => {
                   }
                   onClick={onClose}
                 >
-                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-xs font-semibold text-slate-300">
-                    {item.label[0]}
+                  <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24" }}>
+                    {item.icon}
                   </span>
                   {item.label}
                 </NavLink>
@@ -89,8 +90,8 @@ export const SideNav = ({ isMobileOpen, onClose }: SideNavProps) => {
                   }
                   onClick={onClose}
                 >
-                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-xs font-semibold text-slate-300">
-                    {item.label[0]}
+                  <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24" }}>
+                    {item.icon}
                   </span>
                   {item.label}
                 </NavLink>

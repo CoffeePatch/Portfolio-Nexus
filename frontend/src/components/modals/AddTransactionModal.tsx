@@ -55,48 +55,50 @@ export const AddTransactionModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-md rounded-lg border border-slate-700 bg-slate-900 p-6 shadow-xl"
+        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-700/50 bg-gradient-to-br from-slate-900 via-slate-900 to-black p-8 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-slate-400 transition-colors hover:text-slate-200"
+          className="absolute right-6 top-6 flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700/50 bg-slate-800/50 text-slate-400 transition-all hover:border-slate-600 hover:bg-slate-800 hover:text-white"
           aria-label="Close modal"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}>
+            close
+          </span>
         </button>
 
         {/* Modal Header */}
-        <h2 className="mb-6 text-2xl font-bold text-slate-100">
-          Add Transaction
-        </h2>
+        <div className="mb-8 flex items-center gap-3">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 ring-1 ring-indigo-500/30">
+            <span className="material-symbols-outlined text-3xl text-indigo-400" style={{ fontVariationSettings: "'FILL' 1, 'wght' 300" }}>
+              add_circle
+            </span>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-white">
+              Add Transaction
+            </h2>
+            <p className="text-sm text-slate-500">Record a new expense</p>
+          </div>
+        </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Description Field */}
           <div>
             <label
               htmlFor="description"
-              className="mb-1 block text-sm font-medium text-slate-300"
+              className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-400"
             >
+              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+                subject
+              </span>
               Description
             </label>
             <input
@@ -104,7 +106,7 @@ export const AddTransactionModal = ({
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-xl border border-slate-700/50 bg-slate-800/50 px-4 py-3 text-white placeholder-slate-500 transition-all focus:border-indigo-500/50 focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               placeholder="e.g., Starbucks Coffee"
               required
             />
@@ -114,29 +116,38 @@ export const AddTransactionModal = ({
           <div>
             <label
               htmlFor="amount"
-              className="mb-1 block text-sm font-medium text-slate-300"
+              className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-400"
             >
+              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+                payments
+              </span>
               Amount
             </label>
-            <input
-              type="number"
-              id="amount"
-              step="0.01"
-              min="0"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="0.00"
-              required
-            />
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-500">$</span>
+              <input
+                type="number"
+                id="amount"
+                step="0.01"
+                min="0"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-full rounded-xl border border-slate-700/50 bg-slate-800/50 py-3 pl-8 pr-4 text-white placeholder-slate-500 transition-all focus:border-indigo-500/50 focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                placeholder="0.00"
+                required
+              />
+            </div>
           </div>
 
           {/* Date Field */}
           <div>
             <label
               htmlFor="expenseDate"
-              className="mb-1 block text-sm font-medium text-slate-300"
+              className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-400"
             >
+              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+                calendar_today
+              </span>
               Date
             </label>
             <input
@@ -144,7 +155,7 @@ export const AddTransactionModal = ({
               id="expenseDate"
               value={expenseDate}
               onChange={(e) => setExpenseDate(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-xl border border-slate-700/50 bg-slate-800/50 px-4 py-3 text-white transition-all focus:border-indigo-500/50 focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               required
             />
           </div>
@@ -153,15 +164,18 @@ export const AddTransactionModal = ({
           <div>
             <label
               htmlFor="category"
-              className="mb-1 block text-sm font-medium text-slate-300"
+              className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-400"
             >
+              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+                category
+              </span>
               Category
             </label>
             <select
               id="category"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-xl border border-slate-700/50 bg-slate-800/50 px-4 py-3 text-white transition-all focus:border-indigo-500/50 focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
               required
               disabled={categoriesLoading}
             >
@@ -179,18 +193,18 @@ export const AddTransactionModal = ({
           </div>
 
           {/* Submit Button */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-6">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-md border border-slate-600 bg-slate-800 px-4 py-2 text-slate-300 transition-colors hover:bg-slate-700"
+              className="flex-1 rounded-xl border border-slate-700/50 bg-slate-800/50 px-6 py-3 font-bold text-slate-300 transition-all hover:border-slate-600 hover:bg-slate-800"
               disabled={isPending}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-3 font-bold text-white shadow-lg shadow-indigo-500/30 transition-all hover:shadow-indigo-500/40 disabled:cursor-not-allowed disabled:opacity-50"
               disabled={isPending || categoriesLoading}
             >
               {isPending ? "Saving..." : "Save"}

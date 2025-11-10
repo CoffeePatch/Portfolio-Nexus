@@ -52,6 +52,13 @@ export type ManualHolding = {
   updatedAt: string;
 };
 
+export type PortfolioHistory = {
+  id: number;
+  userId: string;
+  snapshotDate: string;
+  totalValue: number;
+};
+
 export const getStockHoldings = async (): Promise<StockHolding[]> => {
   const response = await portfolioClient.get("/portfolio/v1/stocks");
   return response.data;
@@ -81,6 +88,15 @@ export const getAllHoldings = async () => {
   ]);
 
   return { stocks, mutualFunds, cryptos, manuals };
+};
+
+export const getPortfolioHistory = async (
+  period: string = "1M"
+): Promise<PortfolioHistory[]> => {
+  const response = await portfolioClient.get("/portfolio/v1/history", {
+    params: { period },
+  });
+  return response.data;
 };
 
 
