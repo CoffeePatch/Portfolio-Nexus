@@ -4,6 +4,8 @@ import { useState } from "react";
 
 type HeaderBarProps = {
   onMenuClick: () => void;
+  onMobileMenuClick?: () => void;
+  isSidebarOpen?: boolean;
 };
 
 // Navigation items for header with icons
@@ -16,7 +18,7 @@ const headerNavItems = [
   { label: "Other", to: "/other", icon: "more_horiz" },
 ];
 
-export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
+export const HeaderBar = ({ onMenuClick, onMobileMenuClick, isSidebarOpen = true }: HeaderBarProps) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -29,9 +31,22 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
   return (
     <header className="sticky top-0 z-30 border-b border-slate-800 bg-black backdrop-blur">
       <div className="flex items-center gap-4 px-4 py-4 sm:px-6">
+        {/* Sidebar Toggle Button - Desktop */}
         <button
           type="button"
           onClick={onMenuClick}
+          className="hidden lg:inline-flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/50 bg-indigo-500/20 text-indigo-300 transition hover:bg-indigo-500/30 hover:text-white hover:border-indigo-400"
+          aria-label="Toggle sidebar"
+        >
+          <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}>
+            {isSidebarOpen ? "menu_open" : "menu"}
+          </span>
+        </button>
+
+        {/* Mobile Menu Button */}
+        <button
+          type="button"
+          onClick={onMobileMenuClick || onMenuClick}
           className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 bg-black text-slate-300 transition hover:text-white lg:hidden"
           aria-label="Toggle navigation menu"
         >
@@ -51,10 +66,12 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
           </svg>
         </button>
 
+        {/* PN Portfolio Nexus Branding */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 bg-black text-sm font-bold text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-sm font-bold text-white">
             PN
           </div>
+          <span className="hidden text-base font-semibold text-white sm:block">Portfolio Nexus</span>
         </div>
 
         <nav className="hidden flex-1 items-center justify-center gap-1 text-sm font-medium lg:flex">
@@ -119,11 +136,11 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
                   className="fixed inset-0 z-40"
                   onClick={() => setIsMenuOpen(false)}
                 />
-                <div className="absolute right-0 top-12 z-50 w-48 rounded-xl border border-slate-700 bg-slate-900 shadow-xl">
+                <div className="absolute right-0 top-12 z-50 w-48 rounded-xl border border-white/10 bg-black/80 backdrop-blur-xl shadow-xl">
                   <div className="p-2">
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                      className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
                     >
                       <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24" }}>
                         person
@@ -132,7 +149,7 @@ export const HeaderBar = ({ onMenuClick }: HeaderBarProps) => {
                     </button>
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"
+                      className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm text-slate-300 transition hover:bg-white/10 hover:text-white"
                     >
                       <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24" }}>
                         settings

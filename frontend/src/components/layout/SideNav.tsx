@@ -24,6 +24,7 @@ const supportItems = [
 type SideNavProps = {
   isMobileOpen: boolean;
   onClose: () => void;
+  isCollapsed?: boolean;
 };
 
 const navLinkBase =
@@ -40,25 +41,19 @@ const NavSectionTitle = ({ title }: { title: string }) => (
   </p>
 );
 
-export const SideNav = ({ isMobileOpen, onClose }: SideNavProps) => {
+export const SideNav = ({ isMobileOpen, onClose, isCollapsed = false }: SideNavProps) => {
   return (
     <>
       <div
         className={[
-          "fixed inset-y-0 left-0 z-50 w-72 transform bg-black backdrop-blur-xl transition-transform duration-300 ease-in-out",
-          "lg:static lg:z-auto lg:flex lg:w-64 lg:translate-x-0 lg:bg-black",
+          "fixed inset-y-0 left-0 z-50 w-72 transform bg-black backdrop-blur-xl transition-all duration-300 ease-in-out",
+          "lg:relative lg:z-auto lg:flex lg:bg-black lg:transform-none",
+          isCollapsed ? "lg:w-0 lg:overflow-hidden lg:opacity-0 lg:p-0" : "lg:w-64 lg:opacity-100",
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         ].join(" ")}
       >
-        <nav className="flex h-full flex-col justify-between px-6 py-8">
+        <nav className="flex h-full w-64 flex-col justify-between px-6 py-8">
           <div>
-            <div className="mb-10 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500 text-lg font-bold text-white">
-                PN
-              </div>
-              <span className="text-xl font-semibold text-white">Portfolio Nexus</span>
-            </div>
-
             <NavSectionTitle title="Main" />
             <div className="space-y-1">
               {navItems.map((item) => (

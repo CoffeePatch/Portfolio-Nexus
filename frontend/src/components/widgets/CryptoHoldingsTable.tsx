@@ -1,11 +1,11 @@
-// src/components/widgets/StockHoldingsTable.tsx
-// Holdings table with sparkline trends
+// src/components/widgets/CryptoHoldingsTable.tsx
+// Holdings table with sparkline trends - matches StockHoldingsTable
 
 import React from "react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-import { mockStocks } from "../../data/mockStockData";
+import { mockCryptos } from "../../data/mockCryptoData";
 
-const StockHoldingsTable: React.FC = () => {
+const CryptoHoldingsTable: React.FC = () => {
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -20,13 +20,21 @@ const StockHoldingsTable: React.FC = () => {
   const getTrendData = (trend: number[]) =>
     trend.map((value, index) => ({ value, index }));
 
+  // Crypto color mapping
+  const cryptoColors: Record<string, string> = {
+    BTC: "from-orange-500/20 to-yellow-500/20",
+    ETH: "from-indigo-500/20 to-purple-500/20",
+    SOL: "from-emerald-500/20 to-teal-500/20",
+    DOGE: "from-yellow-500/20 to-amber-500/20",
+  };
+
   return (
     <div className="rounded-3xl border border-white/10 bg-black/70 p-6 backdrop-blur-xl">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h3 className="text-sm font-medium text-white/70">Your Holdings</h3>
-          <p className="mt-1 text-xs text-white/40">{mockStocks.length} stocks in portfolio</p>
+          <p className="mt-1 text-xs text-white/40">{mockCryptos.length} assets in portfolio</p>
         </div>
         <button className="flex items-center gap-1 rounded-full bg-white/5 px-3 py-1.5 text-xs font-medium text-white/60 hover:bg-white/10 transition-colors">
           <span className="material-symbols-outlined text-sm">tune</span>
@@ -40,22 +48,22 @@ const StockHoldingsTable: React.FC = () => {
           <thead>
             <tr className="border-b border-white/10">
               <th className="pb-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
-                Stock
+                Asset
               </th>
               <th className="pb-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">
-                LTP
+                Price
               </th>
               <th className="pb-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">
-                Qty
+                Holdings
               </th>
               <th className="pb-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">
-                Invested
-              </th>
-              <th className="pb-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">
-                Current
+                Value
               </th>
               <th className="pb-3 text-center text-xs font-medium text-white/40 uppercase tracking-wider">
                 7D Trend
+              </th>
+              <th className="pb-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">
+                24h
               </th>
               <th className="pb-3 text-right text-xs font-medium text-white/40 uppercase tracking-wider">
                 Return
@@ -63,61 +71,48 @@ const StockHoldingsTable: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {mockStocks.map((stock) => {
-              const isPositive = stock.totalReturn >= 0;
-              const trendData = getTrendData(stock.trend);
+            {mockCryptos.map((crypto) => {
+              const isPositive = crypto.totalReturn >= 0;
+              const trendData = getTrendData(crypto.trend);
               const trendColor = isPositive ? "#10b981" : "#ef4444";
+              const gradientClass = cryptoColors[crypto.symbol] || "from-gray-500/20 to-slate-500/20";
 
               return (
                 <tr
-                  key={stock.id}
+                  key={crypto.id}
                   className="group cursor-pointer transition-colors hover:bg-white/5"
                 >
-                  {/* Stock Info */}
+                  {/* Asset Info */}
                   <td className="py-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-white/10">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${gradientClass} border border-white/10`}>
                         <span className="text-xs font-bold text-white/80">
-                          {stock.symbol.slice(0, 2)}
+                          {crypto.symbol.slice(0, 2)}
                         </span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-white">{stock.symbol}</p>
-                        <p className="text-xs text-white/40">{stock.exchange}</p>
+                        <p className="text-sm font-medium text-white">{crypto.symbol}</p>
+                        <p className="text-xs text-white/40">{crypto.name}</p>
                       </div>
                     </div>
                   </td>
 
-                  {/* LTP */}
+                  {/* Price */}
                   <td className="py-4 text-right">
                     <p className="text-sm font-medium text-white">
-                      {formatCurrency(stock.ltp)}
-                    </p>
-                    <p
-                      className={`text-xs ${
-                        stock.dayChange >= 0 ? "text-emerald-400" : "text-red-400"
-                      }`}
-                    >
-                      {formatPercent(stock.dayChange)}
+                      {formatCurrency(crypto.ltp)}
                     </p>
                   </td>
 
-                  {/* Quantity */}
+                  {/* Holdings */}
                   <td className="py-4 text-right">
-                    <p className="text-sm font-medium text-white">{stock.quantity}</p>
+                    <p className="text-sm font-medium text-white">{crypto.quantity} {crypto.symbol}</p>
                   </td>
 
-                  {/* Invested */}
-                  <td className="py-4 text-right">
-                    <p className="text-sm font-medium text-white/70">
-                      {formatCurrency(stock.investedAmount)}
-                    </p>
-                  </td>
-
-                  {/* Current Value */}
+                  {/* Value */}
                   <td className="py-4 text-right">
                     <p className="text-sm font-medium text-white">
-                      {formatCurrency(stock.currentValue)}
+                      {formatCurrency(crypto.currentValue)}
                     </p>
                   </td>
 
@@ -140,6 +135,17 @@ const StockHoldingsTable: React.FC = () => {
                     </div>
                   </td>
 
+                  {/* 24h Change */}
+                  <td className="py-4 text-right">
+                    <span
+                      className={`text-sm font-medium ${
+                        crypto.change24h >= 0 ? "text-emerald-400" : "text-red-400"
+                      }`}
+                    >
+                      {formatPercent(crypto.change24h)}
+                    </span>
+                  </td>
+
                   {/* Total Return */}
                   <td className="py-4 text-right">
                     <span
@@ -149,7 +155,7 @@ const StockHoldingsTable: React.FC = () => {
                           : "bg-red-500/10 text-red-400"
                       }`}
                     >
-                      {formatPercent(stock.totalReturn)}
+                      {formatPercent(crypto.totalReturn)}
                     </span>
                   </td>
                 </tr>
@@ -170,4 +176,4 @@ const StockHoldingsTable: React.FC = () => {
   );
 };
 
-export default StockHoldingsTable;
+export default CryptoHoldingsTable;

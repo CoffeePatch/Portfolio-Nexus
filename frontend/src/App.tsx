@@ -7,10 +7,15 @@ import { AddTransactionModal } from "./components/modals/AddTransactionModal";
 
 export const App = () => {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleToggleNav = useCallback(() => {
+  const handleToggleMobileNav = useCallback(() => {
     setIsMobileNavOpen((prev) => !prev);
+  }, []);
+
+  const handleToggleSidebar = useCallback(() => {
+    setIsSidebarCollapsed((prev) => !prev);
   }, []);
 
   const handleCloseNav = useCallback(() => {
@@ -18,10 +23,21 @@ export const App = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen w-full bg-black text-slate-100">
-      <SideNav isMobileOpen={isMobileNavOpen} onClose={handleCloseNav} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <HeaderBar onMenuClick={handleToggleNav} />
+    <div className="flex min-h-screen w-full flex-col bg-black text-slate-100">
+      {/* Header spans full width at the top */}
+      <HeaderBar 
+        onMenuClick={handleToggleSidebar} 
+        onMobileMenuClick={handleToggleMobileNav}
+        isSidebarOpen={!isSidebarCollapsed}
+      />
+      
+      {/* Sidebar and main content below header */}
+      <div className="flex flex-1 overflow-hidden">
+        <SideNav 
+          isMobileOpen={isMobileNavOpen} 
+          onClose={handleCloseNav} 
+          isCollapsed={isSidebarCollapsed}
+        />
         <main className="flex-1 overflow-y-auto bg-black px-6 py-6">
           <Outlet />
         </main>

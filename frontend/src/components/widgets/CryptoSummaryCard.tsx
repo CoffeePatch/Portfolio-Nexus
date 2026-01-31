@@ -1,5 +1,5 @@
-// src/components/widgets/StockSummaryCard.tsx
-// Mirror of MFSummaryCard with stock-specific metrics
+// src/components/widgets/CryptoSummaryCard.tsx
+// Matches StockSummaryCard / MFSummaryCard layout
 
 import React from "react";
 
@@ -37,7 +37,7 @@ const StatBlock: React.FC<StatBlockProps> = ({
   );
 };
 
-interface StockSummaryCardProps {
+interface CryptoSummaryCardProps {
   currentValue: number;
   investedAmount: number;
   totalGain: number;
@@ -46,7 +46,7 @@ interface StockSummaryCardProps {
   dayPnLPercent: number;
 }
 
-const StockSummaryCard: React.FC<StockSummaryCardProps> = ({
+const CryptoSummaryCard: React.FC<CryptoSummaryCardProps> = ({
   currentValue,
   investedAmount,
   totalGain,
@@ -93,4 +93,4 @@ const StockSummaryCard: React.FC<StockSummaryCardProps> = ({
   );
 };
 
-export default StockSummaryCard;
+export default CryptoSummaryCard;

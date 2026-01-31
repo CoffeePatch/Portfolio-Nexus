@@ -1,5 +1,5 @@
-// src/components/widgets/StockGrowthChart.tsx
-// Area chart with timeframe filters for stock portfolio
+// src/components/widgets/CryptoGrowthChart.tsx
+// Area chart with timeframe filters for crypto portfolio
 
 import React, { useState } from "react";
 import {
@@ -13,25 +13,25 @@ import {
   Legend,
 } from "recharts";
 import {
-  stockChartData1D,
-  stockChartData1W,
-  stockChartData1M,
-  stockChartData1Y,
-  stockChartDataMax,
+  cryptoChartData1D,
+  cryptoChartData1W,
+  cryptoChartData1M,
+  cryptoChartData1Y,
+  cryptoChartDataMax,
   type ChartDataPoint,
-} from "../../data/mockStockData";
+} from "../../data/mockCryptoData";
 
 type TimeframeKey = "1D" | "1W" | "1M" | "1Y" | "MAX";
 
 const chartDataMap: Record<TimeframeKey, ChartDataPoint[]> = {
-  "1D": stockChartData1D,
-  "1W": stockChartData1W,
-  "1M": stockChartData1M,
-  "1Y": stockChartData1Y,
-  MAX: stockChartDataMax,
+  "1D": cryptoChartData1D,
+  "1W": cryptoChartData1W,
+  "1M": cryptoChartData1M,
+  "1Y": cryptoChartData1Y,
+  MAX: cryptoChartDataMax,
 };
 
-const StockGrowthChart: React.FC = () => {
+const CryptoGrowthChart: React.FC = () => {
   const [activeTimeframe, setActiveTimeframe] = useState<TimeframeKey>("1Y");
   const timeframes: TimeframeKey[] = ["1D", "1W", "1M", "1Y", "MAX"];
 
@@ -73,19 +73,19 @@ const StockGrowthChart: React.FC = () => {
             margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
           >
             <defs>
-              <linearGradient id="colorInvested" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+              <linearGradient id="cryptoColorInvested" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#f7931a" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#f7931a" stopOpacity={0} />
               </linearGradient>
-              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="cryptoColorValue" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
                 <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
               </linearGradient>
               {/* Multi-color gradient for stroke */}
-              <linearGradient id="strokeGradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#6366f1" />
+              <linearGradient id="cryptoStrokeGradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#f7931a" />
                 <stop offset="50%" stopColor="#10b981" />
-                <stop offset="100%" stopColor="#f59e0b" />
+                <stop offset="100%" stopColor="#627eea" />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
@@ -125,18 +125,18 @@ const StockGrowthChart: React.FC = () => {
             <Area
               type="monotone"
               dataKey="invested"
-              stroke="#6366f1"
+              stroke="#f7931a"
               strokeWidth={2}
               fillOpacity={1}
-              fill="url(#colorInvested)"
+              fill="url(#cryptoColorInvested)"
             />
             <Area
               type="monotone"
               dataKey="value"
-              stroke="url(#strokeGradient)"
+              stroke="url(#cryptoStrokeGradient)"
               strokeWidth={2}
               fillOpacity={1}
-              fill="url(#colorValue)"
+              fill="url(#cryptoColorValue)"
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -145,4 +145,4 @@ const StockGrowthChart: React.FC = () => {
   );
 };
 
-export default StockGrowthChart;
+export default CryptoGrowthChart;
