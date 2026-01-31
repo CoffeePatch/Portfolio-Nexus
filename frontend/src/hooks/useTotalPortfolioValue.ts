@@ -1,10 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllHoldings } from "../api/portfolioService";
-import {
-  getStockPrice,
-  getMutualFundPrice,
-  getCryptoPrice,
-} from "../api/marketDataService";
+import { MOCK_STOCKS, MOCK_CRYPTO, MOCK_MF, MOCK_MANUAL } from "../api/mock/mockPortfolioService";
+
+// Simulated current prices
+const STOCK_PRICES: Record<string, number> = {
+  RELIANCE: 2540, TATASTEEL: 125, INFY: 1550, HDFCBANK: 1680, ITC: 455, TCS: 3650
+};
+const CRYPTO_PRICES: Record<string, number> = {
+  BTC: 5950000, ETH: 235000, SOL: 5200, DOGE: 14
+};
+const MF_NAVS: Record<string, number> = {
+  "120503": 52.5, "122639": 78.2
+};
 
 export type PortfolioValue = {
   totalValue: number;
@@ -17,76 +23,38 @@ export const useTotalPortfolioValue = () => {
   return useQuery({
     queryKey: ["totalPortfolioValue"],
     queryFn: async () => {
-      const { stocks, mutualFunds, cryptos, manuals } = await getAllHoldings();
-
       let totalValue = 0;
       let totalInvested = 0;
 
-      const stockPrices = await Promise.all(
-        stocks.map(async (stock) => {
-          try {
-            const price = await getStockPrice(stock.symbol);
-            return {
-              currentValue: stock.quantity * price.current_price,
-              invested: stock.quantity * stock.purchasePrice,
-            };
-          } catch {
-            return {
-              currentValue: stock.quantity * stock.purchasePrice,
-              invested: stock.quantity * stock.purchasePrice,
-            };
-          }
-        })
-      );
+      // Calculate stocks value
+      MOCK_STOCKS.forEach((stock) => {
+        const currentPrice = STOCK_PRICES[stock.symbol] || stock.purchasePrice * 1.05;
+        totalValue += stock.quantity * currentPrice;
+        totalInvested += stock.quantity * stock.purchasePrice;
+      });
 
-      const mfPrices = await Promise.all(
-        mutualFunds.map(async (mf) => {
-          try {
-            const price = await getMutualFundPrice(mf.schemeCode);
-            return {
-              currentValue: mf.quantity * price.nav,
-              invested: mf.quantity * mf.purchasePrice,
-            };
-          } catch {
-            return {
-              currentValue: mf.quantity * mf.purchasePrice,
-              invested: mf.quantity * mf.purchasePrice,
-            };
-          }
-        })
-      );
+      // Calculate mutual funds value
+      MOCK_MF.forEach((mf) => {
+        const currentNav = MF_NAVS[mf.schemeCode] || mf.purchasePrice * 1.1;
+        totalValue += mf.quantity * currentNav;
+        totalInvested += mf.quantity * mf.purchasePrice;
+      });
 
-      const cryptoPrices = await Promise.all(
-        cryptos.map(async (crypto) => {
-          try {
-            const price = await getCryptoPrice(crypto.coinId);
-            return {
-              currentValue: crypto.quantity * price.current_price,
-              invested: crypto.quantity * crypto.purchasePrice,
-            };
-          } catch {
-            return {
-              currentValue: crypto.quantity * crypto.purchasePrice,
-              invested: crypto.quantity * crypto.purchasePrice,
-            };
-          }
-        })
-      );
+      // Calculate crypto value
+      MOCK_CRYPTO.forEach((crypto) => {
+        const currentPrice = CRYPTO_PRICES[crypto.symbol] || crypto.purchasePrice * 1.1;
+        totalValue += crypto.quantity * currentPrice;
+        totalInvested += crypto.quantity * crypto.purchasePrice;
+      });
 
-      // Add manual holdings (Gold, Real Estate, etc.)
-      const manualValues = (manuals || []).map((manual) => ({
-        currentValue: manual.currentValue,
-        invested: manual.investedValue,
-      }));
-
-      [...stockPrices, ...mfPrices, ...cryptoPrices, ...manualValues].forEach((item) => {
-        totalValue += item.currentValue;
-        totalInvested += item.invested;
+      // Add manual holdings
+      MOCK_MANUAL.forEach((manual) => {
+        totalValue += manual.currentValue;
+        totalInvested += manual.investedValue;
       });
 
       const returnAmount = totalValue - totalInvested;
-      const returnPercent =
-        totalInvested > 0 ? (returnAmount / totalInvested) * 100 : 0;
+      const returnPercent = totalInvested > 0 ? (returnAmount / totalInvested) * 100 : 0;
 
       return {
         totalValue,

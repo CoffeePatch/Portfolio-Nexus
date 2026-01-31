@@ -2,11 +2,18 @@ import { NavLink } from "react-router-dom";
 
 const navItems = [
   { label: "Dashboard", to: "/", icon: "dashboard" },
-  { label: "Portfolio", to: "/portfolio", icon: "account_balance" },
-  { label: "Mutual Funds", to: "/mutual-funds", icon: "pie_chart" },
   { label: "Expenses", to: "/expenses", icon: "payments" },
+  { label: "Stocks & ETF", to: "/stocks", icon: "trending_up" },
+  { label: "Mutual Funds", to: "/mutual-funds", icon: "pie_chart" },
+  { label: "Crypto", to: "/crypto", icon: "currency_bitcoin" },
+  { label: "Other", to: "/other", icon: "more_horiz" },
+];
+
+const toolsItems = [
+  { label: "Portfolio", to: "/portfolio", icon: "account_balance" },
   { label: "Transactions", to: "/transactions", icon: "receipt_long" },
   { label: "Analysis", to: "/analysis", icon: "analytics" },
+  { label: "Market", to: "/market", icon: "monitoring" },
 ];
 
 const supportItems = [
@@ -46,10 +53,10 @@ export const SideNav = ({ isMobileOpen, onClose }: SideNavProps) => {
         <nav className="flex h-full flex-col justify-between px-6 py-8">
           <div>
             <div className="mb-10 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500 text-lg font-semibold text-white">
-                S
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-500 text-lg font-bold text-white">
+                PN
               </div>
-              <span className="text-xl font-semibold text-white">Stovest</span>
+              <span className="text-xl font-semibold text-white">Portfolio Nexus</span>
             </div>
 
             <NavSectionTitle title="Main" />
@@ -73,6 +80,30 @@ export const SideNav = ({ isMobileOpen, onClose }: SideNavProps) => {
                   {item.label}
                 </NavLink>
               ))}
+            </div>
+
+            <div className="mt-6">
+              <NavSectionTitle title="Tools" />
+              <div className="space-y-1">
+                {toolsItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      [
+                        navLinkBase,
+                        isActive ? navLinkActive : navLinkInactive,
+                      ].join(" ")
+                    }
+                    onClick={onClose}
+                  >
+                    <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24" }}>
+                      {item.icon}
+                    </span>
+                    {item.label}
+                  </NavLink>
+                ))}
+              </div>
             </div>
           </div>
 

@@ -1,10 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAllHoldings } from "../api/portfolioService";
-import {
-  getStockPrice,
-  getMutualFundPrice,
-  getCryptoPrice,
-} from "../api/marketDataService";
+import { MOCK_STOCKS, MOCK_CRYPTO, MOCK_MF, MOCK_MANUAL } from "../api/mock/mockPortfolioService";
+
+// Simulated current prices
+const STOCK_PRICES: Record<string, number> = {
+  RELIANCE: 2540, TATASTEEL: 125, INFY: 1550, HDFCBANK: 1680, ITC: 455, TCS: 3650
+};
+const CRYPTO_PRICES: Record<string, number> = {
+  BTC: 5950000, ETH: 235000, SOL: 5200, DOGE: 14
+};
+const MF_NAVS: Record<string, number> = {
+  "120503": 52.5, "122639": 78.2
+};
 
 export type AssetClassSummary = {
   type: string;
@@ -20,30 +26,19 @@ export const useAssetClassSummary = () => {
   return useQuery({
     queryKey: ["assetClassSummary"],
     queryFn: async () => {
-      const { stocks, mutualFunds, cryptos, manuals } = await getAllHoldings();
       const summaries: AssetClassSummary[] = [];
 
       // Process Stocks
-      if (stocks && stocks.length > 0) {
-        const stockPrices = await Promise.all(
-          stocks.map(async (stock) => {
-            try {
-              const price = await getStockPrice(stock.symbol);
-              return {
-                currentValue: stock.quantity * price.current_price,
-                invested: stock.quantity * stock.purchasePrice,
-              };
-            } catch {
-              return {
-                currentValue: stock.quantity * stock.purchasePrice,
-                invested: stock.quantity * stock.purchasePrice,
-              };
-            }
-          })
-        );
+      if (MOCK_STOCKS.length > 0) {
+        let totalValue = 0;
+        let totalInvested = 0;
+        
+        MOCK_STOCKS.forEach((stock) => {
+          const currentPrice = STOCK_PRICES[stock.symbol] || stock.purchasePrice * 1.05;
+          totalValue += stock.quantity * currentPrice;
+          totalInvested += stock.quantity * stock.purchasePrice;
+        });
 
-        const totalValue = stockPrices.reduce((sum, item) => sum + item.currentValue, 0);
-        const totalInvested = stockPrices.reduce((sum, item) => sum + item.invested, 0);
         const gainLoss = totalValue - totalInvested;
         const gainLossPercent = totalInvested > 0 ? (gainLoss / totalInvested) * 100 : 0;
 
@@ -54,31 +49,21 @@ export const useAssetClassSummary = () => {
           totalInvested,
           gainLoss,
           gainLossPercent,
-          count: stocks.length,
+          count: MOCK_STOCKS.length,
         });
       }
 
       // Process Crypto
-      if (cryptos && cryptos.length > 0) {
-        const cryptoPrices = await Promise.all(
-          cryptos.map(async (crypto) => {
-            try {
-              const price = await getCryptoPrice(crypto.coinId);
-              return {
-                currentValue: crypto.quantity * price.current_price,
-                invested: crypto.quantity * crypto.purchasePrice,
-              };
-            } catch {
-              return {
-                currentValue: crypto.quantity * crypto.purchasePrice,
-                invested: crypto.quantity * crypto.purchasePrice,
-              };
-            }
-          })
-        );
+      if (MOCK_CRYPTO.length > 0) {
+        let totalValue = 0;
+        let totalInvested = 0;
 
-        const totalValue = cryptoPrices.reduce((sum, item) => sum + item.currentValue, 0);
-        const totalInvested = cryptoPrices.reduce((sum, item) => sum + item.invested, 0);
+        MOCK_CRYPTO.forEach((crypto) => {
+          const currentPrice = CRYPTO_PRICES[crypto.symbol] || crypto.purchasePrice * 1.1;
+          totalValue += crypto.quantity * currentPrice;
+          totalInvested += crypto.quantity * crypto.purchasePrice;
+        });
+
         const gainLoss = totalValue - totalInvested;
         const gainLossPercent = totalInvested > 0 ? (gainLoss / totalInvested) * 100 : 0;
 
@@ -89,31 +74,21 @@ export const useAssetClassSummary = () => {
           totalInvested,
           gainLoss,
           gainLossPercent,
-          count: cryptos.length,
+          count: MOCK_CRYPTO.length,
         });
       }
 
       // Process Mutual Funds
-      if (mutualFunds && mutualFunds.length > 0) {
-        const mfPrices = await Promise.all(
-          mutualFunds.map(async (mf) => {
-            try {
-              const price = await getMutualFundPrice(mf.schemeCode);
-              return {
-                currentValue: mf.quantity * price.nav,
-                invested: mf.quantity * mf.purchasePrice,
-              };
-            } catch {
-              return {
-                currentValue: mf.quantity * mf.purchasePrice,
-                invested: mf.quantity * mf.purchasePrice,
-              };
-            }
-          })
-        );
+      if (MOCK_MF.length > 0) {
+        let totalValue = 0;
+        let totalInvested = 0;
 
-        const totalValue = mfPrices.reduce((sum, item) => sum + item.currentValue, 0);
-        const totalInvested = mfPrices.reduce((sum, item) => sum + item.invested, 0);
+        MOCK_MF.forEach((mf) => {
+          const currentNav = MF_NAVS[mf.schemeCode] || mf.purchasePrice * 1.1;
+          totalValue += mf.quantity * currentNav;
+          totalInvested += mf.quantity * mf.purchasePrice;
+        });
+
         const gainLoss = totalValue - totalInvested;
         const gainLossPercent = totalInvested > 0 ? (gainLoss / totalInvested) * 100 : 0;
 
@@ -124,14 +99,14 @@ export const useAssetClassSummary = () => {
           totalInvested,
           gainLoss,
           gainLossPercent,
-          count: mutualFunds.length,
+          count: MOCK_MF.length,
         });
       }
 
       // Process Manual Assets (grouped by type)
-      if (manuals && manuals.length > 0) {
-        const manualsByType: { [key: string]: any[] } = {};
-        manuals.forEach((manual) => {
+      if (MOCK_MANUAL.length > 0) {
+        const manualsByType: { [key: string]: typeof MOCK_MANUAL } = {};
+        MOCK_MANUAL.forEach((manual) => {
           if (!manualsByType[manual.assetType]) {
             manualsByType[manual.assetType] = [];
           }
@@ -150,6 +125,7 @@ export const useAssetClassSummary = () => {
             Silver: "diamond",
             "Real Estate": "home",
             NPS: "savings",
+            Bond: "account_balance",
             Bonds: "account_balance",
           };
 
