@@ -36,7 +36,8 @@ const StockHoldingsTable: React.FC = () => {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <div className="h-[320px] overflow-y-auto custom-scrollbar">
+          <table className="w-full">
           <thead>
             <tr className="border-b border-white/10">
               <th className="pb-3 text-left text-xs font-medium text-white/40 uppercase tracking-wider">
@@ -157,6 +158,7 @@ const StockHoldingsTable: React.FC = () => {
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Footer */}

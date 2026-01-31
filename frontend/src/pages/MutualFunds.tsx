@@ -7,29 +7,7 @@ import { FundHoldingsTable } from "../components/widgets/FundHoldingsTable";
 
 const MutualFunds = () => {
   return (
-    <div className="relative min-h-screen w-full bg-black font-sans text-slate-200">
-      
-      {/* Linear Gradient - From LEFT to RIGHT, top 2 inches, CLEARLY VISIBLE - Full width */}
-      <div 
-        className="pointer-events-none absolute inset-x-0"
-        style={{
-          top: 0,
-          height: '2in',
-          left: 0,
-          right: 0,
-          width: '100%',
-          background: `linear-gradient(90deg, 
-            #A8C2AE 0%, 
-            #5EC5AD 12%, 
-            #2AA19B 25%, 
-            #306F77 37%, 
-            #675651 50%, 
-            #F44F2E 62%, 
-            #DC374A 75%, 
-            #75254E 87%, 
-            #241D3F 100%)`
-        }}
-      />
+    <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
       {/* Main Content */}
       <div className="relative z-10 p-8">

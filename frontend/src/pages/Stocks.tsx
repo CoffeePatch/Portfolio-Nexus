@@ -11,25 +11,7 @@ import { mockStockSummary } from "../data/mockStockData";
 
 const Stocks: React.FC = () => {
   return (
-    <div className="relative min-h-screen w-full bg-black font-sans text-slate-200">
-      {/* Linear Gradient - From LEFT to RIGHT, top 2 inches - Full width like MutualFunds */}
-      <div 
-        className="pointer-events-none absolute inset-x-0"
-        style={{
-          top: 0,
-          height: '2in',
-          left: 0,
-          right: 0,
-          width: '100%',
-          background: `linear-gradient(90deg, 
-            #1e3a5f 0%, 
-            #2563eb 25%, 
-            #3b82f6 50%, 
-            #6366f1 75%, 
-            #1e1b4b 100%)`,
-          opacity: 0.85,
-        }}
-      />
+    <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
       {/* Market Ticker - Positioned in gradient header area */}
       <div className="relative z-20 px-8 pt-4">

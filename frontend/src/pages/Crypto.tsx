@@ -10,25 +10,7 @@ import { mockCryptoSummary } from "../data/mockCryptoData";
 
 const Crypto: React.FC = () => {
   return (
-    <div className="relative min-h-screen w-full bg-black font-sans text-slate-200">
-      {/* Linear Gradient - From LEFT to RIGHT, top 2 inches - Orange/Yellow theme for Crypto */}
-      <div 
-        className="pointer-events-none absolute inset-x-0"
-        style={{
-          top: 0,
-          height: '2in',
-          left: 0,
-          right: 0,
-          width: '100%',
-          background: `linear-gradient(90deg, 
-            #7c2d12 0%, 
-            #c2410c 25%, 
-            #f97316 50%, 
-            #fbbf24 75%, 
-            #422006 100%)`,
-          opacity: 0.85,
-        }}
-      />
+    <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
       {/* Main Content - p-8 like MutualFunds/Stocks */}
       <div className="relative z-10 p-8">

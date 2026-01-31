@@ -14,7 +14,8 @@ export const FundHoldingsTable = () => {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <div className="h-[320px] overflow-y-auto custom-scrollbar">
+          <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-white/10 text-xs font-bold uppercase tracking-wider text-slate-500">
               <th className="py-4 pl-2">Fund Name</th>
@@ -97,6 +98,7 @@ export const FundHoldingsTable = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

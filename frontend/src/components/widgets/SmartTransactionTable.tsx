@@ -106,7 +106,7 @@ export const SmartTransactionTable = ({ transactions }: SmartTransactionTablePro
 
       {/* Transaction Table */}
       <div className="overflow-hidden rounded-xl border border-white/10">
-        <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
+        <div className="h-[350px] overflow-y-auto custom-scrollbar">
           <table className="w-full">
             <thead className="sticky top-0 bg-black/90 backdrop-blur-sm z-10">
               <tr className="border-b border-white/10">
@@ -163,7 +163,7 @@ export const SmartTransactionTable = ({ transactions }: SmartTransactionTablePro
           </table>
           
           {filteredTransactions.length === 0 && (
-            <div className="py-8 text-center">
+            <div className="flex flex-col items-center justify-center h-[280px]">
               <span className="material-symbols-outlined text-3xl text-slate-700 mb-2">
                 search_off
               </span>

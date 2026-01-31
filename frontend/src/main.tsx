@@ -21,6 +21,7 @@ import MutualFunds from "./pages/MutualFunds";
 import Crypto from "./pages/Crypto";
 import Stocks from "./pages/Stocks";
 import Other from "./pages/Other";
+import FixedDeposits from "./pages/FixedDeposits";
 import { AuthProvider } from "./providers/AuthProvider";
 import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 
@@ -41,6 +42,7 @@ const router = createBrowserRouter([
       { path: "mutual-funds", element: <MutualFunds /> },
       { path: "stocks", element: <Stocks /> },
       { path: "crypto", element: <Crypto /> },
+      { path: "fixed-deposits", element: <FixedDeposits /> },
       { path: "other", element: <Other /> },
       { path: "transactions", element: <Transactions /> },
       { path: "analysis", element: <Analysis /> },

@@ -29,7 +29,7 @@ export const HeaderBar = ({ onMenuClick, onMobileMenuClick, isSidebarOpen = true
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-800 bg-black backdrop-blur">
+    <header className="sticky top-0 z-30 bg-gradient-to-b from-black/60 via-black/40 to-transparent backdrop-blur-md border-b border-white/5">
       <div className="flex items-center gap-4 px-4 py-4 sm:px-6">
         {/* Sidebar Toggle Button - Desktop */}
         <button

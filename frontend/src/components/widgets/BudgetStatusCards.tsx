@@ -37,7 +37,7 @@ export const BudgetStatusCards = ({ cards }: BudgetStatusCardsProps) => {
               <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}>
                 {card.change > 0 ? 'arrow_upward' : card.change < 0 ? 'arrow_downward' : 'remove'}
               </span>
-              {Math.abs(card.change)}%
+              {Math.abs(card.change).toFixed(1)}%
             </div>
           </div>
 
