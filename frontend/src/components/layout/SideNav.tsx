@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 const navItems = [
   { label: "Dashboard", to: "/", icon: "dashboard" },
   { label: "Portfolio", to: "/portfolio", icon: "account_balance" },
+  { label: "Mutual Funds", to: "/mutual-funds", icon: "pie_chart" },
   { label: "Expenses", to: "/expenses", icon: "payments" },
   { label: "Transactions", to: "/transactions", icon: "receipt_long" },
   { label: "Analysis", to: "/analysis", icon: "analytics" },

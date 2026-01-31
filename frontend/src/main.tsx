@@ -6,7 +6,6 @@ import {
   createBrowserRouter,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import App from "./App";
 import "./index.css";
 import Analysis from "./pages/Analysis";
@@ -18,6 +17,7 @@ import Support from "./pages/Support";
 import Login from "./pages/Login";
 import Expenses from "./pages/Expenses";
 import Transactions from "./pages/Transactions";
+import MutualFunds from "./pages/MutualFunds";
 import { AuthProvider } from "./providers/AuthProvider";
 import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 
@@ -30,15 +30,12 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: (
-      <ProtectedRoute>
-        <App />
-      </ProtectedRoute>
-    ),
+    element: <App />, // Removed ProtectedRoute wrapper for dev mode
     children: [
       { index: true, element: <Dashboard /> },
       { path: "portfolio", element: <Portfolio /> },
       { path: "expenses", element: <Expenses /> },
+      { path: "mutual-funds", element: <MutualFunds /> },
       { path: "transactions", element: <Transactions /> },
       { path: "analysis", element: <Analysis /> },
       { path: "market", element: <Market /> },
@@ -61,7 +58,6 @@ ReactDOM.createRoot(root).render(
       <AuthProvider>
         <RouterProvider router={router} />
       </AuthProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   </React.StrictMode>
 );

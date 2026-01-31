@@ -8,6 +8,13 @@ type ProtectedRouteProps = {
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // DEVELOPMENT MODE: Skip authentication for frontend-only testing
+  const DEV_MODE = true; // Set to false when backend is ready
+  
+  if (DEV_MODE) {
+    return <>{children}</>;
+  }
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">

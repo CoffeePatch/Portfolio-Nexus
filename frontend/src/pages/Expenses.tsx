@@ -1,33 +1,72 @@
+import { BudgetStatusCards } from '../components/widgets/BudgetStatusCards';
+import { CashFlowChart } from '../components/widgets/CashFlowChart';
+import { ExpenseCategoryDonut } from '../components/widgets/ExpenseCategoryDonut';
+import { SmartTransactionTable } from '../components/widgets/SmartTransactionTable';
+import { AccountsWidget } from '../components/widgets/AccountsWidget';
+import {
+  budgetCardsData,
+  cashFlowData,
+  categoryBreakdownData,
+  transactionsData,
+  accountsData,
+  budgetUsageData,
+} from '../data/expenseDummyData';
+
 const Expenses = () => {
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold text-slate-100">Expenses</h1>
-        <p className="text-sm text-slate-400">
-          Full expense breakdown and category management coming soon.
-        </p>
+      {/* Page Header */}
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-100">
+            Expense Tracker
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            Manage your income, expenses, and financial accounts
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="flex items-center gap-2 rounded-xl bg-slate-800/50 px-4 py-2 text-sm font-semibold text-slate-300 ring-1 ring-slate-700 transition-all hover:bg-slate-800 hover:text-white">
+            <span className="material-symbols-outlined text-lg">download</span>
+            Export
+          </button>
+          <button className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-indigo-500/40">
+            <span className="material-symbols-outlined text-lg">add</span>
+            Add Transaction
+          </button>
+        </div>
       </header>
 
-      <div className="rounded-2xl border border-slate-800/50 bg-gradient-to-br from-[#000000] via-[#0a0a0a] to-[#000000] p-8 shadow-2xl">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/20 ring-1 ring-red-500/30">
-            <span className="material-symbols-outlined text-3xl text-red-400" style={{ fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 48" }}>
-              payments
-            </span>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-white">Expense Overview</h2>
-            <p className="text-sm text-slate-500">Track and manage your expenses</p>
-          </div>
+      {/* Budget Status Cards */}
+      <BudgetStatusCards cards={budgetCardsData} />
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Cash Flow Chart (Spans 2 columns) */}
+        <div className="lg:col-span-2">
+          <CashFlowChart data={cashFlowData} />
         </div>
-        
-        <div className="text-center py-12">
-          <span className="material-symbols-outlined text-6xl text-slate-700 mb-4" style={{ fontVariationSettings: "'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 48" }}>
-            construction
-          </span>
-          <p className="text-slate-400">
-            Detailed expense analytics and category management interface coming soon...
-          </p>
+
+        {/* Right Column - Accounts Widget */}
+        <div className="lg:col-span-1">
+          <AccountsWidget accounts={accountsData} />
+        </div>
+      </div>
+
+      {/* Category Breakdown and Transaction Table */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Category Breakdown */}
+        <div className="lg:col-span-1">
+          <ExpenseCategoryDonut
+            data={categoryBreakdownData}
+            budgetUsed={budgetUsageData.usedBudget}
+            totalBudget={budgetUsageData.totalBudget}
+          />
+        </div>
+
+        {/* Transaction Table (Spans 2 columns) */}
+        <div className="lg:col-span-2">
+          <SmartTransactionTable transactions={transactionsData} />
         </div>
       </div>
     </div>
