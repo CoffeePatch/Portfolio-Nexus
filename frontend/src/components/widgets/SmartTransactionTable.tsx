@@ -66,31 +66,12 @@ export const SmartTransactionTable = ({ transactions }: SmartTransactionTablePro
   };
 
   return (
-    <div className="rounded-2xl border border-slate-800/50 bg-gradient-to-br from-[#000000] via-[#0a0a0a] to-[#000000] p-6 shadow-2xl">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 ring-1 ring-indigo-500/30">
-          <span
-            className="material-symbols-outlined text-3xl text-indigo-400"
-            style={{ fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 48" }}
-          >
-            receipt_long
-          </span>
-        </div>
-        <div className="flex-1">
-          <h2 className="text-xl font-bold tracking-tight text-white">All Transactions</h2>
-          <p className="text-sm text-slate-500">Complete transaction history with filters</p>
-        </div>
-        <div className="text-right">
-          <p className="text-2xl font-bold text-white">{filteredTransactions.length}</p>
-          <p className="text-xs text-slate-500">Results</p>
-        </div>
-      </div>
-
-      {/* Search Bar */}
-      <div className="mb-4">
-        <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
+    <div>
+      {/* Search and Filter Row */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        {/* Search Bar */}
+        <div className="relative flex-1 min-w-[200px]">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-lg">
             search
           </span>
           <input
@@ -98,24 +79,20 @@ export const SmartTransactionTable = ({ transactions }: SmartTransactionTablePro
             placeholder="Search transactions..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-slate-800 bg-slate-900/50 py-3 pl-12 pr-4 text-sm text-white placeholder-slate-500 focus:border-indigo-500/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+            className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-10 pr-4 text-sm text-white placeholder-slate-500 focus:border-emerald-500/50 focus:outline-none"
           />
         </div>
-      </div>
 
-      {/* Filter Pills */}
-      <div className="mb-6 space-y-3">
-        {/* Type Filters */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-semibold text-slate-500 mr-2">TYPE:</span>
-          {(['all', 'income', 'expense', 'transfer'] as FilterType[]).map((type) => (
+        {/* Type Filter Pills */}
+        <div className="flex items-center gap-1">
+          {(['all', 'income', 'expense'] as FilterType[]).map((type) => (
             <button
               key={type}
               onClick={() => setTypeFilter(type)}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
                 typeFilter === type
-                  ? 'bg-indigo-500/20 text-indigo-300 ring-2 ring-indigo-500/50'
-                  : 'bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-300'
+                  ? 'bg-emerald-500/20 text-emerald-300'
+                  : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-300'
               }`}
             >
               {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -123,99 +100,61 @@ export const SmartTransactionTable = ({ transactions }: SmartTransactionTablePro
           ))}
         </div>
 
-        {/* Category Filters */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-semibold text-slate-500 mr-2">CATEGORY:</span>
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="rounded-full bg-slate-800/50 px-4 py-1.5 text-xs font-semibold text-slate-300 border border-slate-700 focus:border-indigo-500/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-          >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat === 'all' ? 'All Categories' : cat}
-              </option>
-            ))}
-          </select>
-
-          <span className="text-xs font-semibold text-slate-500 ml-4 mr-2">ACCOUNT:</span>
-          <select
-            value={accountFilter}
-            onChange={(e) => setAccountFilter(e.target.value)}
-            className="rounded-full bg-slate-800/50 px-4 py-1.5 text-xs font-semibold text-slate-300 border border-slate-700 focus:border-indigo-500/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-          >
-            {accounts.map((acc) => (
-              <option key={acc} value={acc}>
-                {acc === 'all' ? 'All Accounts' : acc}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Results Count */}
+        <span className="text-xs text-slate-500">{filteredTransactions.length} results</span>
       </div>
 
       {/* Transaction Table */}
-      <div className="overflow-hidden rounded-xl border border-slate-800/50">
-        <div className="max-h-[500px] overflow-y-auto custom-scrollbar">
+      <div className="overflow-hidden rounded-xl border border-white/10">
+        <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
           <table className="w-full">
-            <thead className="sticky top-0 bg-slate-900/95 backdrop-blur-sm z-10">
-              <tr className="border-b border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+            <thead className="sticky top-0 bg-black/90 backdrop-blur-sm z-10">
+              <tr className="border-b border-white/10">
+                <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Date
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Description
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-slate-500">
                   Category
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Account
-                </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <th className="px-3 py-2 text-right text-xs font-medium uppercase tracking-wider text-slate-500">
                   Amount
-                </th>
-                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  Status
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50">
-              {filteredTransactions.map((transaction) => {
+            <tbody className="divide-y divide-white/5">
+              {filteredTransactions.slice(0, 10).map((transaction) => {
                 const typeInfo = getTypeIcon(transaction.type);
                 return (
                   <tr
                     key={transaction.id}
-                    className="group hover:bg-slate-900/50 transition-colors"
+                    className="group hover:bg-white/5 transition-colors"
                   >
-                    <td className="px-4 py-4 text-sm text-slate-300 whitespace-nowrap">
+                    <td className="px-3 py-3 text-xs text-slate-500 whitespace-nowrap">
                       {new Date(transaction.date).toLocaleDateString('en-IN', {
                         month: 'short',
                         day: 'numeric',
                       })}
                     </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800/50 ring-1 ring-slate-700/50`}>
-                          <span className={`material-symbols-outlined text-lg ${typeInfo.color}`}>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className={`flex h-7 w-7 items-center justify-center rounded-lg bg-white/5`}>
+                          <span className={`material-symbols-outlined text-sm ${typeInfo.color}`}>
                             {typeInfo.icon}
                           </span>
                         </div>
-                        <span className="text-sm font-medium text-white">
+                        <span className="text-xs font-medium text-white">
                           {transaction.description}
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-sm text-slate-400">{transaction.category}</td>
-                    <td className="px-4 py-4 text-sm text-slate-400">{transaction.account}</td>
-                    <td className={`px-4 py-4 text-right text-sm font-bold ${
-                      transaction.type === 'income' ? 'text-green-400' : 'text-red-400'
+                    <td className="px-3 py-3 text-xs text-slate-400">{transaction.category}</td>
+                    <td className={`px-3 py-3 text-right text-xs font-bold ${
+                      transaction.type === 'income' ? 'text-emerald-400' : 'text-red-400'
                     }`}>
                       {transaction.type === 'income' ? '+' : '-'}₹{transaction.amount.toLocaleString('en-IN')}
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${getStatusBadge(transaction.status)}`}>
-                        {transaction.status}
-                      </span>
                     </td>
                   </tr>
                 );
@@ -224,11 +163,11 @@ export const SmartTransactionTable = ({ transactions }: SmartTransactionTablePro
           </table>
           
           {filteredTransactions.length === 0 && (
-            <div className="py-12 text-center">
-              <span className="material-symbols-outlined text-5xl text-slate-700 mb-3">
+            <div className="py-8 text-center">
+              <span className="material-symbols-outlined text-3xl text-slate-700 mb-2">
                 search_off
               </span>
-              <p className="text-slate-400">No transactions found matching your filters</p>
+              <p className="text-xs text-slate-500">No transactions found</p>
             </div>
           )}
         </div>

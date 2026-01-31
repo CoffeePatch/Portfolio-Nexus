@@ -6,7 +6,7 @@ import { RecentTransactions } from "../components/widgets/RecentTransactions";
 
 const Dashboard = () => {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-6 py-6">
       {/* Page Header - Compact */}
       <header className="mb-4">
         <h1 className="text-xl font-bold text-slate-100">Dashboard</h1>

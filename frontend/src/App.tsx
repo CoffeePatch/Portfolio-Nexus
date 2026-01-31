@@ -38,7 +38,7 @@ export const App = () => {
           onClose={handleCloseNav} 
           isCollapsed={isSidebarCollapsed}
         />
-        <main className="flex-1 overflow-y-auto bg-black px-6 py-6">
+        <main className="flex-1 overflow-y-auto bg-black">
           <Outlet />
         </main>
       </div>

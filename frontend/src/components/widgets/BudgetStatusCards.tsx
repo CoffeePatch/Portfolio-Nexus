@@ -6,19 +6,19 @@ interface BudgetStatusCardsProps {
 
 export const BudgetStatusCards = ({ cards }: BudgetStatusCardsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {cards.map((card, index) => (
         <div
           key={index}
-          className="group relative rounded-2xl border border-slate-800/50 bg-gradient-to-br from-[#000000] via-[#0a0a0a] to-[#000000] p-6 shadow-2xl transition-all duration-300 hover:border-slate-700/50 hover:shadow-[0_0_30px_rgba(100,100,255,0.1)]"
+          className="group relative rounded-2xl border border-white/5 bg-white/5 p-5 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:bg-white/10"
         >
           {/* Icon Section */}
-          <div className="flex items-start justify-between mb-4">
-            <div className={`flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br ${card.color} ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-110`}>
+          <div className="flex items-start justify-between mb-3">
+            <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${card.color} ring-1 ring-white/10 transition-transform duration-300 group-hover:scale-105`}>
               <span
-                className="material-symbols-outlined text-3xl"
+                className="material-symbols-outlined text-2xl"
                 style={{
-                  fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 48",
+                  fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24",
                   color: card.change > 0 ? '#10b981' : card.change < 0 ? '#ef4444' : '#3b82f6',
                 }}
               >
@@ -27,14 +27,14 @@ export const BudgetStatusCards = ({ cards }: BudgetStatusCardsProps) => {
             </div>
             
             {/* Change Badge */}
-            <div className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
+            <div className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
               card.change > 0 
-                ? 'bg-green-500/10 text-green-400 ring-1 ring-green-500/20' 
+                ? 'bg-emerald-500/10 text-emerald-400' 
                 : card.change < 0 
-                ? 'bg-red-500/10 text-red-400 ring-1 ring-red-500/20'
-                : 'bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/20'
+                ? 'bg-red-500/10 text-red-400'
+                : 'bg-blue-500/10 text-blue-400'
             }`}>
-              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}>
+              <span className="material-symbols-outlined text-xs" style={{ fontVariationSettings: "'FILL' 1, 'wght' 400" }}>
                 {card.change > 0 ? 'arrow_upward' : card.change < 0 ? 'arrow_downward' : 'remove'}
               </span>
               {Math.abs(card.change)}%
@@ -42,26 +42,22 @@ export const BudgetStatusCards = ({ cards }: BudgetStatusCardsProps) => {
           </div>
 
           {/* Title */}
-          <div className="mb-2">
-            <p className="text-sm font-medium text-slate-400">{card.title}</p>
-          </div>
+          <p className="text-xs font-medium text-slate-400 mb-1">{card.title}</p>
 
           {/* Amount */}
-          <div className="mb-4">
-            <h3 className="text-3xl font-bold tracking-tight text-white">
-              ₹{card.amount.toLocaleString('en-IN')}
-            </h3>
-          </div>
+          <h3 className="text-2xl font-bold tracking-tight text-white mb-3">
+            ₹{card.amount.toLocaleString('en-IN')}
+          </h3>
 
           {/* Mini Trend Chart */}
-          <div className="flex items-end gap-1 h-12">
+          <div className="flex items-end gap-0.5 h-8">
             {card.trend.map((value, i) => {
               const maxValue = Math.max(...card.trend);
               const height = (value / maxValue) * 100;
               return (
                 <div
                   key={i}
-                  className="flex-1 rounded-sm transition-all duration-300 hover:opacity-75"
+                  className="flex-1 rounded-sm transition-all duration-300"
                   style={{
                     height: `${height}%`,
                     background: card.change > 0 

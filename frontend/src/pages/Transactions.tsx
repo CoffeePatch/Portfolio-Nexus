@@ -1,6 +1,6 @@
 const Transactions = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-6 py-6">
       <header>
         <h1 className="text-2xl font-semibold text-slate-100">Transactions</h1>
         <p className="text-sm text-slate-400">
