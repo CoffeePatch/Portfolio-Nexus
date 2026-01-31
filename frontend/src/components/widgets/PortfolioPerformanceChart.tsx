@@ -1,249 +1,146 @@
-import { useState } from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
+import { useState, useEffect } from "react";
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
 } from "recharts";
-import { usePortfolioHistory } from "../../hooks/usePortfolioHistory";
+import { getMockPortfolioHistory } from "../../api/mock/mockPortfolioService";
+import type { PortfolioHistory } from "../../api/portfolioService";
 
-const timeFilters = ["1W", "1M", "6M", "1Y"] as const;
-
-const SkeletonLoader = () => (
-  <div className="animate-pulse space-y-4">
-    <div className="flex items-center justify-between">
-      <div className="h-6 w-48 rounded bg-slate-800"></div>
-      <div className="flex gap-2">
-        {timeFilters.map((filter) => (
-          <div key={filter} className="h-9 w-12 rounded-lg bg-slate-800"></div>
-        ))}
-      </div>
-    </div>
-    <div className="h-80 rounded-lg bg-slate-800/50"></div>
-  </div>
+const TimeRangeButton = ({ 
+  active, 
+  label, 
+  onClick 
+}: { 
+  active: boolean; 
+  label: string; 
+  onClick: () => void; 
+}) => (
+  <button
+    onClick={onClick}
+    className={`px-3 py-1 text-xs font-medium rounded-lg transition-all duration-200 ${
+      active
+        ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/25"
+        : "text-slate-400 hover:text-white hover:bg-slate-800"
+    }`}
+  >
+    {label}
+  </button>
 );
 
-const ErrorState = ({ message }: { message: string }) => (
-  <div className="rounded-xl border border-red-900/50 bg-red-950/20 p-6">
-    <div className="flex items-center gap-3">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        className="h-6 w-6 text-red-400"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
-        />
-      </svg>
-      <div>
-        <p className="font-medium text-red-200">Error Loading Chart</p>
-        <p className="text-sm text-red-300/80">{message}</p>
-      </div>
-    </div>
-  </div>
-);
+export const PortfolioPerformanceChart = () => {
+  const [data, setData] = useState<PortfolioHistory[]>([]);
+  const [timeRange, setTimeRange] = useState<"1D" | "1W" | "1M" | "1Y" | "ALL">("1M");
+  const [loading, setLoading] = useState(false);
 
-const EmptyState = () => (
-  <div className="flex h-80 items-center justify-center rounded-xl border border-slate-800 bg-black">
-    <div className="text-center">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        className="mx-auto h-12 w-12 text-slate-600"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
-        />
-      </svg>
-      <p className="mt-4 text-sm font-medium text-slate-400">
-        No portfolio data available
-      </p>
-      <p className="mt-1 text-xs text-slate-500">
-        Add assets to your portfolio to see performance
-      </p>
-    </div>
-  </div>
-);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      // Fetch fresh mock data whenever time range changes
+      const history = await getMockPortfolioHistory(timeRange);
+      setData(history);
+      setLoading(false);
+    };
 
-// Custom Tooltip Component
-const CustomTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    return (
-      <div className="rounded-lg border border-slate-700 bg-slate-800/95 px-4 py-3 shadow-xl backdrop-blur-sm">
-        <p className="text-xs font-medium text-slate-400">{data.timestamp}</p>
-        <p className="mt-1 text-lg font-semibold text-slate-100">
-          ${data.value.toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
+    fetchData();
+  }, [timeRange]);
 
-interface PortfolioPerformanceChartProps {
-  className?: string;
-}
-
-export const PortfolioPerformanceChart = ({
-  className = "",
-}: PortfolioPerformanceChartProps) => {
-  const [period, setPeriod] = useState("1M");
-  const { data, isLoading, isError, error } = usePortfolioHistory(period);
-
-  // Force proper grid span by ensuring the className is always applied
-  const containerClassName = `group relative overflow-hidden rounded-2xl border border-slate-800/50 bg-gradient-to-br from-[#000000] via-[#0a0a0a] to-[#000000] p-8 shadow-2xl ${className}`.trim();
-
-  // Show loading skeleton
-  if (isLoading) {
-    return (
-      <div className={containerClassName}>
-        <SkeletonLoader />
-      </div>
-    );
-  }
-
-  // Show error state
-  if (isError) {
-    return (
-      <div className={containerClassName}>
-        <ErrorState
-          message={error?.message || "Could not load portfolio history"}
-        />
-      </div>
-    );
-  }
-
-  // Show empty state
-  if (!data || data.length === 0) {
-    return (
-      <div className={containerClassName}>
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 ring-1 ring-green-500/30">
-            <span className="material-symbols-outlined text-3xl text-green-400" style={{ fontVariationSettings: "'FILL' 1, 'wght' 300" }}>
-              insights
-            </span>
-          </div>
-          <h2 className="text-xl font-bold tracking-tight text-white">
-            Portfolio Performance
-          </h2>
-        </div>
-        <EmptyState />
-      </div>
-    );
-  }
+  // Calculate percentage change for the header
+  const firstValue = data.length > 0 ? data[0].totalValue : 0;
+  const lastValue = data.length > 0 ? data[data.length - 1].totalValue : 0;
+  const change = lastValue - firstValue;
+  const changePercent = firstValue > 0 ? (change / firstValue) * 100 : 0;
+  const isPositive = change >= 0;
 
   return (
-    <div className={containerClassName}>
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-      
-      {/* Header with Title and Time Filters */}
-      <div className="relative mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 ring-1 ring-green-500/30">
-            <span className="material-symbols-outlined text-3xl text-green-400" style={{ fontVariationSettings: "'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 48" }}>
-              insights
+    <div className="w-full p-6 rounded-2xl bg-[#0a0a0a] border border-slate-800/50 shadow-xl">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div>
+          <h2 className="text-slate-400 text-sm font-medium mb-1">Total Net Worth</h2>
+          <div className="flex items-baseline gap-3">
+            <span className="text-3xl font-bold text-white tracking-tight">
+              ₹{lastValue.toLocaleString()}
             </span>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-white">
-              Portfolio Performance
-            </h2>
-            <p className="text-sm text-slate-500">Track your wealth over time</p>
+            <span
+              className={`text-sm font-medium px-2 py-0.5 rounded-full ${
+                isPositive 
+                  ? "bg-emerald-500/10 text-emerald-400" 
+                  : "bg-rose-500/10 text-rose-400"
+              }`}
+            >
+              {isPositive ? "+" : ""}{changePercent.toFixed(2)}% ({timeRange})
+            </span>
           </div>
         </div>
 
-        {/* Time Filter Buttons */}
-        <div className="flex flex-wrap gap-2">
-          {timeFilters.map((filter) => (
-            <button
-              key={filter}
-              type="button"
-              onClick={() => setPeriod(filter)}
-              className={[
-                "rounded-lg px-5 py-2.5 text-sm font-bold transition-all",
-                period === filter
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30 ring-1 ring-indigo-400/50"
-                  : "border border-slate-800/50 bg-slate-900/30 text-slate-300 hover:border-slate-700/50 hover:bg-slate-900/50 hover:text-white",
-              ].join(" ")}
-            >
-              {filter}
-            </button>
+        {/* Time Range Selector */}
+        <div className="flex bg-slate-900/50 p-1 rounded-xl border border-slate-800">
+          {(["1D", "1W", "1M", "1Y", "ALL"] as const).map((range) => (
+            <TimeRangeButton
+              key={range}
+              label={range}
+              active={timeRange === range}
+              onClick={() => setTimeRange(range)}
+            />
           ))}
         </div>
       </div>
 
-      {/* Chart - wrapped in div to ensure proper width calculation */}
-      <div className="relative w-full min-w-0">
-        <ResponsiveContainer width="100%" height={320} debounce={1}>
-          <AreaChart
-            data={data}
-            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-          >
-          <defs>
-            <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-            </linearGradient>
-          </defs>
-
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke="#334155"
-            strokeOpacity={0.2}
-            vertical={false}
-          />
-
-          <XAxis
-            dataKey="date"
-            stroke="#64748b"
-            style={{ fontSize: "12px", fontWeight: "600" }}
-            tickLine={false}
-            axisLine={false}
-            interval="preserveStartEnd"
-            minTickGap={30}
-          />
-
-          <YAxis
-            stroke="#64748b"
-            style={{ fontSize: "12px", fontWeight: "600" }}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(value) =>
-              `$${(value / 1000).toFixed(0)}k`
-            }
-            width={45}
-          />
-
-          <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#6366f1", strokeWidth: 2 }} />
-
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke="#6366f1"
-            strokeWidth={3}
-            fill="url(#colorValue)"
-            animationDuration={1000}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      {/* Chart Section */}
+      <div className="h-[300px] w-full relative">
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#0a0a0a]/50 z-10 backdrop-blur-sm">
+            <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+            <XAxis 
+              dataKey="snapshotDate" 
+              hide={true} 
+            />
+            <YAxis 
+              hide={false}
+              orientation="right"
+              tick={{ fill: '#64748b', fontSize: 10 }}
+              tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#0f172a",
+                borderColor: "#1e293b",
+                borderRadius: "8px",
+                color: "#f8fafc",
+              }}
+              formatter={(value: number) => [`₹${value.toLocaleString()}`, "Value"]}
+              labelFormatter={(label) => new Date(label).toLocaleDateString()}
+            />
+            <Area
+              type="monotone"
+              dataKey="totalValue"
+              stroke="#6366f1"
+              strokeWidth={3}
+              fillOpacity={1}
+              fill="url(#colorValue)"
+              animationDuration={1000}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

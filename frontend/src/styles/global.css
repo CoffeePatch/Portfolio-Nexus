@@ -27,6 +27,15 @@
   --color-error: #ef4444;            /* Red for negative values */
 }
 
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -60,6 +69,11 @@ body {
   word-wrap: normal;
   direction: ltr;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Ticker animation */
+.animate-scroll {
+  animation: scroll 60s linear infinite;
 }
 
 /* Hide scrollbar for carousel components while maintaining scroll functionality */
@@ -97,6 +111,7 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
 
 .custom-scrollbar::-webkit-scrollbar-corner {
   background: #0a0a0a;
