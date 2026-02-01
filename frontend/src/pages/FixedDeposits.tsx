@@ -45,8 +45,8 @@ const FixedDeposits = () => {
             
             <div className="rounded-3xl border border-white/10 bg-black/70 p-5 backdrop-blur-xl">
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/30 to-orange-500/30">
-                  <span className="material-symbols-outlined text-amber-400" style={{ fontVariationSettings: "'FILL' 1" }}>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500/30 to-rose-500/30">
+                  <span className="material-symbols-outlined text-pink-400" style={{ fontVariationSettings: "'FILL' 1" }}>
                     savings
                   </span>
                 </div>
@@ -58,7 +58,7 @@ const FixedDeposits = () => {
               <div className="space-y-3">
                 <div>
                   <p className="text-xs text-slate-500">Total Invested</p>
-                  <p className="text-xl font-bold text-amber-400">{formatCurrency(fdSummary.totalInvested)}</p>
+                  <p className="text-xl font-bold text-pink-400">{formatCurrency(fdSummary.totalInvested)}</p>
                 </div>
                 <div className="h-px bg-white/10" />
                 <div className="grid grid-cols-2 gap-3">

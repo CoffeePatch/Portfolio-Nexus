@@ -22,6 +22,8 @@ import Crypto from "./pages/Crypto";
 import Stocks from "./pages/Stocks";
 import Other from "./pages/Other";
 import FixedDeposits from "./pages/FixedDeposits";
+import PreciousMetals from "./pages/PreciousMetals";
+import RealEstate from "./pages/RealEstate";
 import { AuthProvider } from "./providers/AuthProvider";
 import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 
@@ -43,6 +45,8 @@ const router = createBrowserRouter([
       { path: "stocks", element: <Stocks /> },
       { path: "crypto", element: <Crypto /> },
       { path: "fixed-deposits", element: <FixedDeposits /> },
+      { path: "precious-metals", element: <PreciousMetals /> },
+      { path: "real-estate", element: <RealEstate /> },
       { path: "other", element: <Other /> },
       { path: "transactions", element: <Transactions /> },
       { path: "analysis", element: <Analysis /> },

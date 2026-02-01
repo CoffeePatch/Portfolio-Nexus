@@ -6,6 +6,9 @@ const navItems = [
   { label: "Stocks & ETF", to: "/stocks", icon: "trending_up" },
   { label: "Mutual Funds", to: "/mutual-funds", icon: "pie_chart" },
   { label: "Crypto", to: "/crypto", icon: "currency_bitcoin" },
+  { label: "Fixed Deposits", to: "/fixed-deposits", icon: "savings" },
+  { label: "Gold & Silver", to: "/precious-metals", icon: "diamond" },
+  { label: "Real Estate", to: "/real-estate", icon: "apartment" },
   { label: "Other", to: "/other", icon: "more_horiz" },
 ];
 

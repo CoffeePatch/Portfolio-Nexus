@@ -38,7 +38,7 @@ export const FDInterestChart = () => {
               onClick={() => setActiveFilter(filter)}
               className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
                 activeFilter === filter
-                  ? 'bg-amber-500 text-white'
+                  ? 'bg-pink-500 text-white'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -53,8 +53,8 @@ export const FDInterestChart = () => {
           <AreaChart data={getFilteredData()} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="interestGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="#f59e0b" stopOpacity={0} />
+                <stop offset="0%" stopColor="#ec4899" stopOpacity={0.4} />
+                <stop offset="100%" stopColor="#ec4899" stopOpacity={0} />
               </linearGradient>
             </defs>
             <XAxis 
@@ -85,7 +85,7 @@ export const FDInterestChart = () => {
             <Area
               type="monotone"
               dataKey="cumulative"
-              stroke="#f59e0b"
+              stroke="#ec4899"
               strokeWidth={2}
               fill="url(#interestGradient)"
             />

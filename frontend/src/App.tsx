@@ -12,7 +12,9 @@ const routeGradients: Record<string, string> = {
   '/mutual-funds': `linear-gradient(90deg, #A8C2AE 0%, #5EC5AD 12%, #2AA19B 25%, #306F77 37%, #675651 50%, #F44F2E 62%, #DC374A 75%, #75254E 87%, #241D3F 100%)`,
   '/crypto': `linear-gradient(90deg, #7c2d12 0%, #c2410c 25%, #f97316 50%, #fbbf24 75%, #422006 100%)`,
   '/expenses': `linear-gradient(90deg, #064e3b 0%, #047857 25%, #10b981 50%, #34d399 75%, #1e3a5f 100%)`,
-  '/fixed-deposits': `linear-gradient(90deg, #78350f 0%, #b45309 25%, #f59e0b 50%, #fbbf24 75%, #451a03 100%)`,
+  '/fixed-deposits': `linear-gradient(90deg, #831843 0%, #be185d 25%, #ec4899 50%, #f472b6 75%, #500724 100%)`,
+  '/precious-metals': `linear-gradient(90deg, #78350f 0%, #b45309 25%, #f59e0b 50%, #fcd34d 75%, #451a03 100%)`,
+  '/real-estate': `linear-gradient(90deg, #0c4a6e 0%, #0369a1 25%, #0ea5e9 50%, #38bdf8 75%, #082f49 100%)`,
 };
 
 export const App = () => {

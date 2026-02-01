@@ -27,7 +27,7 @@ const getStatusBadge = (status: string) => {
   }
 };
 
-type SortField = 'bankName' | 'principalAmount' | 'interestRate' | 'maturityDate' | 'maturityAmount';
+type SortField = 'bankName' | 'principalAmount' | 'interestRate' | 'startDate' | 'maturityDate' | 'maturityAmount';
 
 export const FDHoldingsTable = () => {
   const [sortField, setSortField] = useState<SortField>('maturityDate');
@@ -59,6 +59,11 @@ export const FDHoldingsTable = () => {
       bVal = new Date(b.maturityDate).getTime();
     }
     
+    if (sortField === 'startDate') {
+      aVal = new Date(a.startDate).getTime();
+      bVal = new Date(b.startDate).getTime();
+    }
+    
     if (typeof aVal === 'string') {
       return sortOrder === 'asc' 
         ? aVal.localeCompare(bVal as string)
@@ -69,7 +74,7 @@ export const FDHoldingsTable = () => {
   });
 
   const SortIcon = ({ field }: { field: SortField }) => (
-    <span className={`material-symbols-outlined text-xs ml-1 ${sortField === field ? 'text-amber-400' : 'text-slate-600'}`}>
+    <span className={`material-symbols-outlined text-xs ml-1 ${sortField === field ? 'text-pink-400' : 'text-slate-600'}`}>
       {sortField === field ? (sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'}
     </span>
   );
@@ -86,15 +91,14 @@ export const FDHoldingsTable = () => {
                 onClick={() => setFilter(f)}
                 className={`rounded-md px-3 py-1 text-xs font-medium capitalize transition-all ${
                   filter === f
-                    ? 'bg-amber-500 text-white'
+                    ? 'bg-pink-500 text-white'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
                 {f}
               </button>
-            ))}
-          </div>
-          <span className="text-xs text-amber-400 cursor-pointer hover:text-amber-300">View All</span>
+            ))}n          </div>
+          <span className="text-xs text-pink-400 cursor-pointer hover:text-pink-300">View All</span>
         </div>
       </div>
 
@@ -113,6 +117,9 @@ export const FDHoldingsTable = () => {
                 <span className="flex items-center justify-end">Rate <SortIcon field="interestRate" /></span>
               </th>
               <th className="py-3 px-4">Tenure</th>
+              <th className="py-3 px-4 cursor-pointer hover:text-white" onClick={() => handleSort('startDate')}>
+                <span className="flex items-center">Invested Date <SortIcon field="startDate" /></span>
+              </th>
               <th className="py-3 px-4 cursor-pointer hover:text-white" onClick={() => handleSort('maturityDate')}>
                 <span className="flex items-center">Maturity Date <SortIcon field="maturityDate" /></span>
               </th>
@@ -127,8 +134,8 @@ export const FDHoldingsTable = () => {
               <tr key={fd.id} className="hover:bg-white/5 transition-colors">
                 <td className="py-3 pr-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20">
-                      <span className="material-symbols-outlined text-amber-400 text-sm">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/20">
+                      <span className="material-symbols-outlined text-pink-400 text-sm">
                         account_balance
                       </span>
                     </div>
@@ -154,6 +161,9 @@ export const FDHoldingsTable = () => {
                     ? `${Math.floor(fd.tenureMonths / 12)}Y ${fd.tenureMonths % 12 > 0 ? `${fd.tenureMonths % 12}M` : ''}`
                     : `${fd.tenureMonths}M`
                   }
+                </td>
+                <td className="py-3 px-4 text-slate-300">
+                  {formatDate(fd.startDate)}
                 </td>
                 <td className="py-3 px-4 text-slate-300">
                   {formatDate(fd.maturityDate)}

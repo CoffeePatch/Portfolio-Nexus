@@ -32,7 +32,7 @@ export const UpcomingMaturities = () => {
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white">Upcoming Maturities</h3>
-        <span className="text-xs text-amber-400 cursor-pointer hover:text-amber-300">View All</span>
+        <span className="text-xs text-pink-400 cursor-pointer hover:text-pink-300">View All</span>
       </div>
       
       <div className="flex-1 space-y-3 overflow-y-auto custom-scrollbar">
@@ -46,8 +46,8 @@ export const UpcomingMaturities = () => {
               className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20">
-                  <span className="material-symbols-outlined text-amber-400 text-lg">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-pink-500/20">
+                  <span className="material-symbols-outlined text-pink-400 text-lg">
                     account_balance
                   </span>
                 </div>
