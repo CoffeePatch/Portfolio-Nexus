@@ -159,7 +159,7 @@ export const TransactionTab = ({
       </div>
 
       <div className="rounded-xl border border-slate-700/60 bg-slate-800/30 p-4">
-        <h3 className="text-sm font-semibold text-slate-200">Recent mock entries</h3>
+        <h3 className="text-sm font-semibold text-slate-200">Recent entries</h3>
         {entries.length === 0 ? (
           <p className="mt-2 text-sm text-slate-500">No transaction records yet.</p>
         ) : (

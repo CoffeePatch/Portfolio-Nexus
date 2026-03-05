@@ -39,12 +39,12 @@ const MetalsExplorer = () => (
         </p>
       </header>
 
-      {/* Key single tickers – metals + USD/INR */}
+      {/* Key single tickers – metals spot prices */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {[
-          'COMEX:GC1!',
-          'COMEX:SI1!',
-          'NYMEX:PL1!',
+          'OANDA:XAUUSD',
+          'OANDA:XAGUSD',
+          'OANDA:XPTUSD',
           'TVC:GOLD',
           'TVC:SILVER',
         ].map((symbol) => (
@@ -61,13 +61,13 @@ const MetalsExplorer = () => (
       {/* Gold Advanced Chart – full width */}
       <WidgetSection
         title="Gold — Advanced Chart"
-        subtitle="COMEX Gold futures — full interactive analysis"
+        subtitle="Gold spot price (XAU/USD) — full interactive analysis"
         icon="candlestick_chart"
         accentFrom="from-yellow-500/20"
         accentTo="to-amber-500/20"
       >
         <div className="overflow-hidden rounded-lg" style={{ height: 500 }}>
-          <AdvancedChart symbol="COMEX:GC1!" />
+          <AdvancedChart symbol="OANDA:XAUUSD" />
         </div>
       </WidgetSection>
 
@@ -75,25 +75,25 @@ const MetalsExplorer = () => (
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <WidgetSection
           title="Silver — Advanced Chart"
-          subtitle="COMEX Silver futures"
+          subtitle="Silver spot price (XAG/USD)"
           icon="candlestick_chart"
           accentFrom="from-slate-400/20"
           accentTo="to-zinc-500/20"
         >
           <div className="overflow-hidden rounded-lg" style={{ height: 420 }}>
-            <AdvancedChart symbol="COMEX:SI1!" />
+            <AdvancedChart symbol="OANDA:XAGUSD" />
           </div>
         </WidgetSection>
 
         <WidgetSection
           title="Platinum — Advanced Chart"
-          subtitle="NYMEX Platinum futures"
+          subtitle="Platinum spot price (XPT/USD)"
           icon="candlestick_chart"
           accentFrom="from-sky-400/20"
           accentTo="to-slate-500/20"
         >
           <div className="overflow-hidden rounded-lg" style={{ height: 420 }}>
-            <AdvancedChart symbol="NYMEX:PL1!" />
+            <AdvancedChart symbol="OANDA:XPTUSD" />
           </div>
         </WidgetSection>
       </div>
@@ -128,10 +128,10 @@ const MetalsExplorer = () => (
       {/* Mini charts – metals overview */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { symbol: 'TVC:GOLD', label: 'Gold Spot' },
-          { symbol: 'TVC:SILVER', label: 'Silver Spot' },
-          { symbol: 'NYMEX:PL1!', label: 'Platinum' },
-          { symbol: 'NYMEX:PA1!', label: 'Palladium' },
+          { symbol: 'OANDA:XAUUSD', label: 'Gold Spot' },
+          { symbol: 'OANDA:XAGUSD', label: 'Silver Spot' },
+          { symbol: 'OANDA:XPTUSD', label: 'Platinum Spot' },
+          { symbol: 'TVC:PALLADIUM', label: 'Palladium' },
         ].map((item) => (
           <div
             key={item.symbol}

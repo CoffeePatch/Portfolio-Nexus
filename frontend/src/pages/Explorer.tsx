@@ -106,7 +106,7 @@ const Explorer = () => {
             { symbol: 'AMEX:SPY' },
             { symbol: 'BITSTAMP:BTCUSD' },
             { symbol: 'BITSTAMP:ETHUSD' },
-            { symbol: 'COMEX:GC1!' },
+            { symbol: 'OANDA:XAUUSD' },
           ].map((t) => (
             <div
               key={t.symbol}

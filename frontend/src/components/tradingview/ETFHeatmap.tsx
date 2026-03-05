@@ -7,7 +7,7 @@ export const ETFHeatmap = memo(
       className={className}
       scriptSrc="https://s3.tradingview.com/external-embedding/embed-widget-etf-heatmap.js"
       config={{
-        dataSource: 'AllUSEtf',
+        dataSource: 'AllINEtf',
         blockSize: 'aum',
         blockColor: 'change',
         grouping: 'asset_class',

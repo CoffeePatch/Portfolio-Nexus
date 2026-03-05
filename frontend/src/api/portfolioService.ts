@@ -99,4 +99,90 @@ export const getPortfolioHistory = async (
   return response.data;
 };
 
+/* ------------------------------------------------------------------ */
+/*  Request DTOs — mirrors the Java @RequestBody classes exactly      */
+/* ------------------------------------------------------------------ */
 
+export type StockHoldingRequestDto = {
+  symbol: string;
+  exchange: string;
+  quantity: number;
+  purchasePrice: number;
+  purchaseDate: string; // "YYYY-MM-DD"
+};
+
+export type MutualFundHoldingRequestDto = {
+  schemeCode: string;
+  quantity: number;
+  purchasePrice: number;
+  purchaseDate: string;
+};
+
+export type CryptoHoldingRequestDto = {
+  coinId: string;
+  symbol: string;
+  quantity: number;
+  purchasePrice: number;
+  purchaseDate: string;
+};
+
+export type ManualHoldingRequestDto = {
+  assetName: string;
+  assetType: string; // "FD" | "Real Estate" | "Gold" etc.
+  investedValue: number;
+  currentValue: number;
+  purchaseDate: string;
+  maturityDate: string | null;
+};
+
+/* ------------------------------------------------------------------ */
+/*  POST — create holdings (persist to MySQL via portfolioService)    */
+/* ------------------------------------------------------------------ */
+
+export const addStockHolding = async (
+  dto: StockHoldingRequestDto
+): Promise<StockHolding> => {
+  const response = await portfolioClient.post("/portfolio/v1/stock", dto);
+  return response.data;
+};
+
+export const addMutualFundHolding = async (
+  dto: MutualFundHoldingRequestDto
+): Promise<MutualFundHolding> => {
+  const response = await portfolioClient.post("/portfolio/v1/mutual-fund", dto);
+  return response.data;
+};
+
+export const addCryptoHolding = async (
+  dto: CryptoHoldingRequestDto
+): Promise<CryptoHolding> => {
+  const response = await portfolioClient.post("/portfolio/v1/crypto", dto);
+  return response.data;
+};
+
+export const addManualHolding = async (
+  dto: ManualHoldingRequestDto
+): Promise<ManualHolding> => {
+  const response = await portfolioClient.post("/portfolio/v1/manual", dto);
+  return response.data;
+};
+
+/* ------------------------------------------------------------------ */
+/*  DELETE — remove holdings                                          */
+/* ------------------------------------------------------------------ */
+
+export const deleteStockHolding = async (externalId: string): Promise<void> => {
+  await portfolioClient.delete(`/portfolio/v1/stock/${externalId}`);
+};
+
+export const deleteMutualFundHolding = async (externalId: string): Promise<void> => {
+  await portfolioClient.delete(`/portfolio/v1/mutual-fund/${externalId}`);
+};
+
+export const deleteCryptoHolding = async (externalId: string): Promise<void> => {
+  await portfolioClient.delete(`/portfolio/v1/crypto/${externalId}`);
+};
+
+export const deleteManualHolding = async (externalId: string): Promise<void> => {
+  await portfolioClient.delete(`/portfolio/v1/manual/${externalId}`);
+};

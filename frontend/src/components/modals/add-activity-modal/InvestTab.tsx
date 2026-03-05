@@ -319,7 +319,7 @@ export const InvestTab = ({
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-700/60 bg-slate-800/30 p-4">
-          <h3 className="text-sm font-semibold text-slate-200">Mock account balances</h3>
+          <h3 className="text-sm font-semibold text-slate-200">Account Balances</h3>
           <div className="mt-3 space-y-2">
             {accountOptions.map((account) => (
               <div key={account} className="flex items-center justify-between rounded-lg border border-slate-700/40 bg-slate-900/40 px-3 py-2">
@@ -331,7 +331,7 @@ export const InvestTab = ({
         </div>
 
         <div className="rounded-xl border border-slate-700/60 bg-slate-800/30 p-4">
-          <h3 className="text-sm font-semibold text-slate-200">Recent mock investment entries</h3>
+          <h3 className="text-sm font-semibold text-slate-200">Recent investment entries</h3>
           {entries.length === 0 ? (
             <p className="mt-2 text-sm text-slate-500">No investment records yet.</p>
           ) : (

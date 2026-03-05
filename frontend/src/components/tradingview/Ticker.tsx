@@ -12,7 +12,7 @@ export const Ticker = memo(
           { proName: 'FOREXCOM:NSXUSD', title: 'US 100' },
           { proName: 'BITSTAMP:BTCUSD', title: 'Bitcoin' },
           { proName: 'BITSTAMP:ETHUSD', title: 'Ethereum' },
-          { description: 'Gold', proName: 'COMEX:GC1!' },
+          { description: 'Gold', proName: 'OANDA:XAUUSD' },
         ],
         isTransparent: false,
         showSymbolLogo: true,

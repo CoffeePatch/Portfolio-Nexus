@@ -8,13 +8,20 @@ import {
   transactionCategories,
   transferCategory,
 } from "./constants";
-import { calculateUnits, formatAmount, isMarketAsset, toLocalDateTimeInputValue } from "./utils";
+import { calculateUnits, isMarketAsset, toLocalDateTimeInputValue } from "./utils";
 import {
   getCryptoPrice,
   getMutualFundPrice,
   getStockPrice,
   searchMarketInstruments,
 } from "../../../api/marketDataService";
+import {
+  addStockHolding,
+  addMutualFundHolding,
+  addCryptoHolding,
+  addManualHolding,
+} from "../../../api/portfolioService";
+import { createExpense } from "../../../api/expenseService";
 import type {
   InvestAssetClass,
   InvestForm,
@@ -214,7 +221,7 @@ export const useAddActivityModalState = () => {
     });
   };
 
-  const handleMockSubmit = (
+  const handleMockSubmit = async (
     e: FormEvent,
     tab: "transaction" | "transfer"
   ) => {
@@ -232,8 +239,20 @@ export const useAddActivityModalState = () => {
     setIsSubmitting(true);
     setStatusMessage(null);
 
-    window.setTimeout(() => {
+    try {
       if (tab === "transaction") {
+        // Persist to expenseService → MySQL
+        const expenseDate = transactionForm.dateTime
+          ? transactionForm.dateTime.split("T")[0]
+          : new Date().toISOString().split("T")[0];
+
+        await createExpense({
+          amount: Number(transactionForm.amount),
+          description: transactionForm.title,
+          expenseDate,
+          categoryId: 1, // Default category — user can refine later
+        });
+
         const newTransaction: TransactionEntry = {
           id: crypto.randomUUID(),
           internalTags: [internalSystemTags.transaction],
@@ -248,7 +267,21 @@ export const useAddActivityModalState = () => {
         };
 
         setTransactionEntries((prev) => [newTransaction, ...prev].slice(0, 5));
+        setMessage("Transaction saved to database successfully.", "success");
+        resetTransactionForm();
       } else {
+        // Transfer: persist as expense with transfer description
+        const expenseDate = transferForm.dateTime
+          ? transferForm.dateTime.split("T")[0]
+          : new Date().toISOString().split("T")[0];
+
+        await createExpense({
+          amount: Number(transferForm.amount),
+          description: `Transfer: ${transferForm.outAccount} → ${transferForm.inAccount} — ${transferForm.title}`,
+          expenseDate,
+          categoryId: 1,
+        });
+
         const newTransfer: TransferEntry = {
           id: crypto.randomUUID(),
           internalTags: [internalSystemTags.transfer],
@@ -263,22 +296,18 @@ export const useAddActivityModalState = () => {
         };
 
         setTransferEntries((prev) => [newTransfer, ...prev].slice(0, 5));
-      }
-
-      setIsSubmitting(false);
-      setMessage(
-        tab === "transaction"
-          ? "Transaction saved to mock data successfully."
-          : "Transfer saved to mock data successfully.",
-        "success"
-      );
-
-      if (tab === "transaction") {
-        resetTransactionForm();
-      } else {
+        setMessage("Transfer saved to database successfully.", "success");
         resetTransferForm();
       }
-    }, 450);
+    } catch (error) {
+      console.error("Failed to save", tab, error);
+      setMessage(
+        `Failed to save ${tab}. Please check if the backend is running and try again.`,
+        "error"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleInvestAssetClassChange = (assetClass: InvestAssetClass) => {
@@ -351,7 +380,7 @@ export const useAddActivityModalState = () => {
     }
   };
 
-  const handleInvestSubmit = (e: FormEvent) => {
+  const handleInvestSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     const marketFlow = isMarketAsset(investForm.assetClass);
@@ -394,22 +423,84 @@ export const useAddActivityModalState = () => {
       }
     }
 
-    const availableBalance = investAccountBalances[investForm.outAccount] ?? 0;
-
-    if (availableBalance < amount) {
-      setMessage(
-        `Insufficient balance in ${investForm.outAccount}. Available: ${formatAmount(
-          availableBalance
-        )}`,
-        "error"
-      );
-      return;
-    }
-
     setIsSubmitting(true);
     setStatusMessage(null);
 
-    window.setTimeout(() => {
+    // Extract purchaseDate in YYYY-MM-DD format for the backend
+    const purchaseDate = investForm.dateTime
+      ? investForm.dateTime.split("T")[0]
+      : new Date().toISOString().split("T")[0];
+
+    try {
+      /* ------------------------------------------------------------ */
+      /*  Route to the correct backend POST endpoint by asset class   */
+      /* ------------------------------------------------------------ */
+
+      if (investForm.assetClass === "Stock") {
+        // Parse exchange from symbol (e.g., "NSE:RELIANCE" → exchange "NSE", symbol "RELIANCE")
+        const rawSymbol = investForm.selectedSymbol;
+        let exchange = "";
+        let symbol = rawSymbol;
+
+        if (rawSymbol.includes(":")) {
+          const parts = rawSymbol.split(":");
+          exchange = parts[0];
+          symbol = parts[1];
+        } else if (rawSymbol.includes(".")) {
+          // Handle Yahoo-style symbols like "TCS.NS" → exchange "NSE", symbol "TCS"
+          const parts = rawSymbol.split(".");
+          symbol = parts[0];
+          exchange = parts[1] === "NS" ? "NSE" : parts[1] === "BO" ? "BSE" : parts[1];
+        }
+
+        await addStockHolding({
+          symbol,
+          exchange,
+          quantity: Number(investForm.units),
+          purchasePrice: Number(investForm.pricePerUnit),
+          purchaseDate,
+        });
+      } else if (investForm.assetClass === "Mutual Fund") {
+        await addMutualFundHolding({
+          schemeCode: investForm.selectedSymbol,
+          quantity: Number(investForm.units),
+          purchasePrice: Number(investForm.pricePerUnit),
+          purchaseDate,
+        });
+      } else if (investForm.assetClass === "Crypto") {
+        // For crypto, coinId is the CoinGecko id (e.g., "bitcoin") and symbol is "BTC"
+        const rawSymbol = investForm.selectedSymbol;
+        await addCryptoHolding({
+          coinId: rawSymbol.toLowerCase(),
+          symbol: rawSymbol.toUpperCase(),
+          quantity: Number(investForm.units),
+          purchasePrice: Number(investForm.pricePerUnit),
+          purchaseDate,
+        });
+      } else {
+        // Fixed Deposit / Real Estate → manual holding
+        const assetTypeMap: Record<string, string> = {
+          "Fixed Deposit": "FD",
+          "Real Estate": "Real Estate",
+        };
+
+        await addManualHolding({
+          assetName: investForm.assetName.trim(),
+          assetType: assetTypeMap[investForm.assetClass] ?? investForm.assetClass,
+          investedValue: amount,
+          currentValue: amount, // At purchase time, current = invested
+          purchaseDate,
+          maturityDate:
+            investForm.assetClass === "Fixed Deposit" && investForm.maturityDate
+              ? investForm.maturityDate
+              : null,
+        });
+      }
+
+      /* ------------------------------------------------------------ */
+      /*  On success: update local UI entries for display             */
+      /* ------------------------------------------------------------ */
+
       const entryAssetName = marketFlow
         ? investForm.selectedSymbol
         : investForm.assetName.trim();
@@ -434,61 +525,21 @@ export const useAddActivityModalState = () => {
         notes: investForm.notes,
       };
 
-      const nextBalances = {
-        ...investAccountBalances,
-        [investForm.outAccount]: availableBalance - amount,
-      };
-
-      const nextInvestments = (() => {
-        const existingIndex = investmentEntries.findIndex(
-          (entry) =>
-            entry.assetClass === newEntry.assetClass &&
-            entry.assetName === newEntry.assetName
-        );
-
-        if (existingIndex === -1) {
-          return [newEntry, ...investmentEntries].slice(0, 8);
-        }
-
-        const existingEntry = investmentEntries[existingIndex];
-        const updatedEntry: InvestmentEntry = {
-          ...existingEntry,
-          internalTags: Array.from(
-            new Set([...existingEntry.internalTags, ...newEntry.internalTags])
-          ),
-          dateTime: newEntry.dateTime,
-          outAccount: newEntry.outAccount,
-          amount: existingEntry.amount + newEntry.amount,
-          pricePerUnit: newEntry.pricePerUnit ?? existingEntry.pricePerUnit,
-          units:
-            typeof existingEntry.units === "number" ||
-            typeof newEntry.units === "number"
-              ? (existingEntry.units ?? 0) + (newEntry.units ?? 0)
-              : undefined,
-          expectedRoi: newEntry.expectedRoi ?? existingEntry.expectedRoi,
-          maturityDate: newEntry.maturityDate ?? existingEntry.maturityDate,
-          tags: [existingEntry.tags, newEntry.tags]
-            .filter(Boolean)
-            .join(" | "),
-          notes: [existingEntry.notes, newEntry.notes]
-            .filter(Boolean)
-            .join(" | "),
-        };
-
-        const updatedEntries = [...investmentEntries];
-        updatedEntries.splice(existingIndex, 1);
-        return [updatedEntry, ...updatedEntries].slice(0, 8);
-      })();
-
-      setInvestAccountBalances(nextBalances);
-      setInvestmentEntries(nextInvestments);
-      setIsSubmitting(false);
+      setInvestmentEntries((prev) => [newEntry, ...prev].slice(0, 8));
       setMessage(
-        "Investment saved. Mock dual execution completed: amount deducted and holding updated.",
+        `${investForm.assetClass} investment saved to database successfully.`,
         "success"
       );
       resetInvestForm();
-    }, 500);
+    } catch (error) {
+      console.error("Failed to save investment", error);
+      setMessage(
+        "Failed to save investment. Please check if the backend is running and try again.",
+        "error"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return {
