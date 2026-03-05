@@ -5,6 +5,7 @@ import { HeaderBar } from "./components/layout/HeaderBar";
 import { FloatingActionButton } from "./components/shared/FloatingActionButton";
 import { AddTransactionModal } from "./components/modals/AddTransactionModal";
 import { PageTransition } from "./components/layout/PageTransition";
+import { TradingViewPreloader } from "./components/tradingview/TradingViewPreloader";
 
 // Gradient configurations for each route
 const routeGradients: Record<string, string> = {
@@ -81,6 +82,7 @@ export const App = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
+      <TradingViewPreloader />
     </div>
   );
 };

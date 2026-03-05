@@ -20,6 +20,7 @@ type InvestTabProps = {
   form: InvestForm;
   setForm: React.Dispatch<React.SetStateAction<InvestForm>>;
   isSubmitting: boolean;
+  isPriceLoading: boolean;
   onClose: () => void;
   onSubmit: (e: FormEvent) => void;
   onAssetClassChange: (assetClass: InvestAssetClass) => void;
@@ -27,7 +28,7 @@ type InvestTabProps = {
     field: "investmentAmount" | "pricePerUnit",
     value: string
   ) => void;
-  onInstrumentPick: (instrument: MarketInstrument) => void;
+  onInstrumentPick: (instrument: MarketInstrument) => Promise<void>;
   filteredMarketInstruments: MarketInstrument[];
   accountOptions: string[];
   accountBalances: Record<string, number>;
@@ -38,6 +39,7 @@ export const InvestTab = ({
   form,
   setForm,
   isSubmitting,
+  isPriceLoading,
   onClose,
   onSubmit,
   onAssetClassChange,
@@ -137,11 +139,18 @@ export const InvestTab = ({
                   <button
                     key={instrument.symbol}
                     type="button"
+                    disabled={isPriceLoading}
                     onClick={() => onInstrumentPick(instrument)}
-                    className="flex w-full items-center justify-between border-b border-slate-700/40 px-4 py-3 text-left text-sm last:border-b-0 hover:bg-slate-800"
+                    className="flex w-full items-center justify-between border-b border-slate-700/40 px-4 py-3 text-left text-sm last:border-b-0 hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <span className="text-slate-100">{instrument.symbol} - {instrument.name}</span>
-                    <span className="text-xs text-slate-400">{formatAmount(instrument.mockPrice)}</span>
+                    <span className="text-xs text-slate-400">
+                      {isPriceLoading
+                        ? "Fetching..."
+                        : instrument.mockPrice > 0
+                          ? formatAmount(instrument.mockPrice)
+                          : "Live"}
+                    </span>
                   </button>
                 ))}
               </div>

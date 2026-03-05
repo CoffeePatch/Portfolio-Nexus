@@ -24,6 +24,7 @@ import Other from "./pages/Other";
 import FixedDeposits from "./pages/FixedDeposits";
 import PreciousMetals from "./pages/PreciousMetals";
 import RealEstate from "./pages/RealEstate";
+import Explorer from "./pages/Explorer";
 import { AuthProvider } from "./providers/AuthProvider";
 import { ProtectedRoute } from "./components/shared/ProtectedRoute";
 
@@ -50,6 +51,7 @@ const router = createBrowserRouter([
       { path: "other", element: <Other /> },
       { path: "transactions", element: <Transactions /> },
       { path: "analysis", element: <Analysis /> },
+      { path: "explorer", element: <Explorer /> },
       { path: "market", element: <Market /> },
       { path: "community", element: <Community /> },
       { path: "support", element: <Support /> },

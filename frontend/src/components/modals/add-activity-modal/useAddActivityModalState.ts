@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import {
   accountOptions,
@@ -9,6 +9,12 @@ import {
   transferCategory,
 } from "./constants";
 import { calculateUnits, formatAmount, isMarketAsset, toLocalDateTimeInputValue } from "./utils";
+import {
+  getCryptoPrice,
+  getMutualFundPrice,
+  getStockPrice,
+  searchMarketInstruments,
+} from "../../../api/marketDataService";
 import type {
   InvestAssetClass,
   InvestForm,
@@ -25,6 +31,7 @@ import type {
 export const useAddActivityModalState = () => {
   const [activeTab, setActiveTab] = useState<ModalTab>("transaction");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPriceLoading, setIsPriceLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<MessageTone>("success");
 
@@ -79,7 +86,9 @@ export const useAddActivityModalState = () => {
     notes: "",
   });
 
-  const filteredMarketInstruments = useMemo(() => {
+  const [liveMarketInstruments, setLiveMarketInstruments] = useState<MarketInstrument[]>([]);
+
+  const localFilteredMarketInstruments = useMemo(() => {
     if (!isMarketAsset(investForm.assetClass)) {
       return [];
     }
@@ -99,6 +108,61 @@ export const useAddActivityModalState = () => {
       })
       .slice(0, 6);
   }, [investForm.assetClass, investForm.searchQuery]);
+
+  useEffect(() => {
+    if (!isMarketAsset(investForm.assetClass)) {
+      setLiveMarketInstruments([]);
+      return;
+    }
+
+    const query = investForm.searchQuery.trim();
+    if (query.length < 2) {
+      setLiveMarketInstruments([]);
+      return;
+    }
+
+    const searchTypeByAssetClass = {
+      Stock: "stock",
+      "Mutual Fund": "mutual_fund",
+      Crypto: "crypto",
+    } as const;
+
+    const searchType = searchTypeByAssetClass[investForm.assetClass];
+    if (!searchType) {
+      setLiveMarketInstruments([]);
+      return;
+    }
+
+    let isActive = true;
+    const timeoutId = window.setTimeout(async () => {
+      const results = await searchMarketInstruments(query, searchType);
+      if (!isActive) {
+        return;
+      }
+
+      setLiveMarketInstruments(
+        results.map((result) => ({
+          symbol: result.symbol,
+          name: result.name,
+          assetClass: investForm.assetClass,
+          mockPrice: 0,
+        }))
+      );
+    }, 300);
+
+    return () => {
+      isActive = false;
+      window.clearTimeout(timeoutId);
+    };
+  }, [investForm.assetClass, investForm.searchQuery]);
+
+  const filteredMarketInstruments = useMemo(
+    () =>
+      liveMarketInstruments.length > 0
+        ? liveMarketInstruments
+        : localFilteredMarketInstruments,
+    [liveMarketInstruments, localFilteredMarketInstruments]
+  );
 
   const setMessage = (message: string, tone: MessageTone) => {
     setStatusTone(tone);
@@ -246,21 +310,45 @@ export const useAddActivityModalState = () => {
     });
   };
 
-  const handleInstrumentPick = (instrument: MarketInstrument) => {
-    setInvestForm((prev) => {
-      const next = {
-        ...prev,
-        searchQuery: `${instrument.symbol} - ${instrument.name}`,
-        selectedSymbol: instrument.symbol,
-        pricePerUnit: instrument.mockPrice.toString(),
-      };
+  const handleInstrumentPick = async (instrument: MarketInstrument) => {
+    setIsPriceLoading(true);
 
-      if (!next.unitsManuallyEdited) {
-        next.units = calculateUnits(next.investmentAmount, next.pricePerUnit);
+    try {
+      let fetchedPrice = instrument.mockPrice;
+
+      if (instrument.assetClass === "Stock") {
+        const stockData = await getStockPrice(instrument.symbol);
+        fetchedPrice = Number(stockData.current_price);
+      } else if (instrument.assetClass === "Mutual Fund") {
+        const mfData = await getMutualFundPrice(instrument.symbol);
+        fetchedPrice = Number(mfData.nav);
+      } else if (instrument.assetClass === "Crypto") {
+        const cryptoData = await getCryptoPrice(instrument.symbol.toLowerCase());
+        fetchedPrice = Number(cryptoData.current_price);
       }
 
-      return next;
-    });
+      const resolvedPrice = Number.isFinite(fetchedPrice) ? fetchedPrice : 0;
+
+      setInvestForm((prev) => {
+        const next = {
+          ...prev,
+          searchQuery: `${instrument.symbol} - ${instrument.name}`,
+          selectedSymbol: instrument.symbol,
+          pricePerUnit: resolvedPrice > 0 ? resolvedPrice.toString() : prev.pricePerUnit,
+        };
+
+        if (!next.unitsManuallyEdited) {
+          next.units = calculateUnits(next.investmentAmount, next.pricePerUnit);
+        }
+
+        return next;
+      });
+    } catch (error) {
+      console.error("Failed to fetch live price for selected instrument", error);
+      setMessage("Could not fetch live price. Please try another symbol.", "error");
+    } finally {
+      setIsPriceLoading(false);
+    }
   };
 
   const handleInvestSubmit = (e: FormEvent) => {
@@ -407,6 +495,7 @@ export const useAddActivityModalState = () => {
     activeTab,
     setActiveTab,
     isSubmitting,
+    isPriceLoading,
     statusMessage,
     statusTone,
     setStatusMessage,

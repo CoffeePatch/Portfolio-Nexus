@@ -8,10 +8,11 @@ import { MetalAllocationChart } from "../components/widgets/MetalAllocationChart
 import { MetalHoldingsTable } from "../components/widgets/MetalHoldingsTable";
 import { MetalMarketRates } from "../components/widgets/MetalMarketRates";
 import { metalSummary } from "../data/mockMetalsData";
+import { AssetPageShell } from "../components/shared/AssetPageShell";
+import { MetalsExplorer } from "./explorers";
 
-const PreciousMetals: React.FC = () => {
-  return (
-    <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
+const MetalsPortfolio: React.FC = () => (
+  <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
       {/* Main Content - p-8 like Crypto */}
       <div className="relative z-10 p-8">
@@ -66,7 +67,17 @@ const PreciousMetals: React.FC = () => {
 
       </div>
     </div>
-  );
-};
+);
+
+const PreciousMetals: React.FC = () => (
+  <AssetPageShell
+    explorerView={<MetalsExplorer />}
+    portfolioView={<MetalsPortfolio />}
+    explorerTitle="Metals Explorer"
+    portfolioTitle="Gold & Silver"
+    explorerSubtitle="Real-time precious metals data"
+    portfolioSubtitle="Your metals portfolio"
+  />
+);
 
 export default PreciousMetals;

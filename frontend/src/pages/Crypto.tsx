@@ -7,10 +7,11 @@ import CryptoGrowthChart from "../components/widgets/CryptoGrowthChart";
 import CryptoAllocationWidget from "../components/widgets/CryptoAllocationWidget";
 import CryptoHoldingsTable from "../components/widgets/CryptoHoldingsTable";
 import { mockCryptoSummary } from "../data/mockCryptoData";
+import { AssetPageShell } from "../components/shared/AssetPageShell";
+import { CryptoExplorer } from "./explorers";
 
-const Crypto: React.FC = () => {
-  return (
-    <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
+const CryptoPortfolio: React.FC = () => (
+  <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
       {/* Main Content - p-8 like MutualFunds/Stocks */}
       <div className="relative z-10 p-8">
@@ -62,7 +63,17 @@ const Crypto: React.FC = () => {
 
       </div>
     </div>
-  );
-};
+);
+
+const Crypto: React.FC = () => (
+  <AssetPageShell
+    explorerView={<CryptoExplorer />}
+    portfolioView={<CryptoPortfolio />}
+    explorerTitle="Crypto Explorer"
+    portfolioTitle="Crypto Portfolio"
+    explorerSubtitle="Real-time cryptocurrency data"
+    portfolioSubtitle="Your crypto holdings"
+  />
+);
 
 export default Crypto;

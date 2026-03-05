@@ -4,10 +4,11 @@ import { GrowthCurveChart } from "../components/widgets/GrowthCurveChart";
 import { CategoryAllocationDonut } from "../components/widgets/CategoryAllocationDonut";
 import { UpcomingSIPsWidget } from "../components/widgets/UpcomingSIPsWidget";
 import { FundHoldingsTable } from "../components/widgets/FundHoldingsTable";
+import { AssetPageShell } from "../components/shared/AssetPageShell";
+import { MutualFundsExplorer } from "./explorers";
 
-const MutualFunds = () => {
-  return (
-    <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
+const MutualFundsPortfolio = () => (
+  <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
       {/* Main Content */}
       <div className="relative z-10 p-8">
@@ -78,7 +79,17 @@ const MutualFunds = () => {
 
       </div>
     </div>
-  );
-};
+);
+
+const MutualFunds = () => (
+  <AssetPageShell
+    explorerView={<MutualFundsExplorer />}
+    portfolioView={<MutualFundsPortfolio />}
+    explorerTitle="Mutual Funds Explorer"
+    portfolioTitle="Mutual Funds"
+    explorerSubtitle="Real-time index & ETF data"
+    portfolioSubtitle="Your mutual fund portfolio"
+  />
+);
 
 export default MutualFunds;

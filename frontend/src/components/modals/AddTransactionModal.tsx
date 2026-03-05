@@ -16,6 +16,7 @@ export const AddTransactionModal = ({
     activeTab,
     setActiveTab,
     isSubmitting,
+    isPriceLoading,
     statusMessage,
     statusTone,
     setStatusMessage,
@@ -139,6 +140,7 @@ export const AddTransactionModal = ({
             form={investForm}
             setForm={setInvestForm}
             isSubmitting={isSubmitting}
+            isPriceLoading={isPriceLoading}
             onClose={onClose}
             onSubmit={handleInvestSubmit}
             onAssetClassChange={handleInvestAssetClassChange}

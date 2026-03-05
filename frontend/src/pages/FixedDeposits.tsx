@@ -4,6 +4,8 @@ import { FDTypeAllocation } from '../components/widgets/FDTypeAllocation';
 import { UpcomingMaturities } from '../components/widgets/UpcomingMaturities';
 import { FDHoldingsTable } from '../components/widgets/FDHoldingsTable';
 import { fdSummary } from '../data/mockFDData';
+import { AssetPageShell } from '../components/shared/AssetPageShell';
+import { FixedDepositsExplorer } from './explorers';
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-IN', {
@@ -13,9 +15,8 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const FixedDeposits = () => {
-  return (
-    <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
+const FDPortfolio = () => (
+  <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
       <div className="relative z-10 p-8">
         
@@ -85,7 +86,17 @@ const FixedDeposits = () => {
         </div>
       </div>
     </div>
-  );
-};
+);
+
+const FixedDeposits = () => (
+  <AssetPageShell
+    explorerView={<FixedDepositsExplorer />}
+    portfolioView={<FDPortfolio />}
+    explorerTitle="Fixed Income Explorer"
+    portfolioTitle="Fixed Deposits"
+    explorerSubtitle="Real-time bond & yield data"
+    portfolioSubtitle="Your FD portfolio"
+  />
+);
 
 export default FixedDeposits;

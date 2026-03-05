@@ -8,10 +8,11 @@ import { PropertyAllocationChart } from "../components/widgets/PropertyAllocatio
 import { RealEstateMetrics } from "../components/widgets/RealEstateMetrics";
 import { PropertyHoldingsTable } from "../components/widgets/PropertyHoldingsTable";
 import { realEstateSummary } from "../data/mockRealEstateData";
+import { AssetPageShell } from "../components/shared/AssetPageShell";
+import { RealEstateExplorer } from "./explorers";
 
-const RealEstate: React.FC = () => {
-  return (
-    <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
+const RealEstatePortfolio: React.FC = () => (
+  <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
       {/* Main Content - p-8 like other pages */}
       <div className="relative z-10 p-8">
@@ -67,7 +68,17 @@ const RealEstate: React.FC = () => {
 
       </div>
     </div>
-  );
-};
+);
+
+const RealEstate: React.FC = () => (
+  <AssetPageShell
+    explorerView={<RealEstateExplorer />}
+    portfolioView={<RealEstatePortfolio />}
+    explorerTitle="Real Estate Explorer"
+    portfolioTitle="Real Estate"
+    explorerSubtitle="Real-time REIT & property market data"
+    portfolioSubtitle="Your property portfolio"
+  />
+);
 
 export default RealEstate;

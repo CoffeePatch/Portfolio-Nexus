@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { propertyAllocation, cityDistribution } from '../../data/mockRealEstateData';
+import { propertyAllocation } from '../../data/mockRealEstateData';
 
 const formatCrores = (val: number) => {
   if (val >= 10000000) {
@@ -70,22 +70,6 @@ export const PropertyAllocationChart: React.FC = () => {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* City Distribution */}
-      <div className="mt-4 pt-4 border-t border-white/10">
-        <h4 className="text-sm font-medium text-slate-400 mb-3">By City</h4>
-        <div className="space-y-2">
-          {cityDistribution.slice(0, 4).map((city) => (
-            <div key={city.city} className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">{city.city}</span>
-              <div className="text-right">
-                <span className="text-white">{formatCrores(city.value)}</span>
-                <span className="text-slate-500 ml-2">({city.properties})</span>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

@@ -8,18 +8,19 @@ import StockGrowthChart from "../components/widgets/StockGrowthChart";
 import SectorAllocationWidget from "../components/widgets/SectorAllocationWidget";
 import StockHoldingsTable from "../components/widgets/StockHoldingsTable";
 import { mockStockSummary } from "../data/mockStockData";
+import { AssetPageShell } from "../components/shared/AssetPageShell";
+import { StocksExplorer } from "./explorers";
 
-const Stocks: React.FC = () => {
-  return (
-    <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
+const StocksPortfolio: React.FC = () => (
+  <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
-      {/* Market Ticker - Positioned in gradient header area */}
-      <div className="relative z-20 px-8 pt-4">
-        <MarketTicker />
-      </div>
+    {/* Market Ticker - Positioned in gradient header area */}
+    <div className="relative z-20 px-8 pt-4">
+      <MarketTicker />
+    </div>
 
-      {/* Main Content - p-8 like MutualFunds */}
-      <div className="relative z-10 p-8">
+    {/* Main Content - p-8 like MutualFunds */}
+    <div className="relative z-10 p-8">
 
         {/* Grid: Left side (widgets stacked) + Right side (vertical widget) */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
@@ -68,7 +69,17 @@ const Stocks: React.FC = () => {
 
       </div>
     </div>
-  );
-};
+);
+
+const Stocks: React.FC = () => (
+  <AssetPageShell
+    explorerView={<StocksExplorer />}
+    portfolioView={<StocksPortfolio />}
+    explorerTitle="Stocks Explorer"
+    portfolioTitle="Stocks & ETF"
+    explorerSubtitle="Real-time equity market data"
+    portfolioSubtitle="Your stock portfolio"
+  />
+);
 
 export default Stocks;

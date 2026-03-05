@@ -14,7 +14,20 @@ def search_stocks(query):
 
 def get_stock_price(symbol):
     try:
-        ticker = yf.Ticker(symbol)
+        normalized_symbol = symbol.strip()
+
+        if ":" in normalized_symbol:
+            exchange, ticker_code = normalized_symbol.split(":", 1)
+            if exchange.upper() == "NSE":
+                normalized_symbol = f"{ticker_code}.NS"
+            elif exchange.upper() == "BSE":
+                normalized_symbol = f"{ticker_code}.BO"
+            else:
+                normalized_symbol = ticker_code
+        elif "." not in normalized_symbol and normalized_symbol.isalnum():
+            normalized_symbol = f"{normalized_symbol}.NS"
+
+        ticker = yf.Ticker(normalized_symbol)
         hist = ticker.history(period="1d")
         if hist.empty:
             return None

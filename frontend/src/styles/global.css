@@ -71,6 +71,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ── TradingView dark-mode enforcement ────────────────────── */
+/* Forces a dark background on every widget container & iframe
+   so there is never a flash of white while the iframe loads. */
+.tradingview-widget-container {
+  background-color: #131722;
+}
+.tradingview-widget-container__widget {
+  background-color: #131722;
+}
+.tradingview-widget-container iframe {
+  background-color: #131722 !important;
+  color-scheme: dark;
+}
+
 /* Ticker animation */
 .animate-scroll {
   animation: scroll 60s linear infinite;
