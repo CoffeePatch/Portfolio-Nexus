@@ -21,7 +21,8 @@ import {
   addCryptoHolding,
   addManualHolding,
 } from "../../../api/portfolioService";
-import { createExpense } from "../../../api/expenseService";
+import { createExpense, getCategories, createCategory } from "../../../api/expenseService";
+import type { ExpenseCategory } from "../../../api/expenseService";
 import type {
   InvestAssetClass,
   InvestForm,
@@ -95,6 +96,52 @@ export const useAddActivityModalState = () => {
 
   const [liveMarketInstruments, setLiveMarketInstruments] = useState<MarketInstrument[]>([]);
 
+  // ── Expense categories: fetch from backend, auto-create missing ones ──
+  const [userCategories, setUserCategories] = useState<ExpenseCategory[]>([]);
+
+  useEffect(() => {
+    const syncCategories = async () => {
+      try {
+        const existing = await getCategories();
+        setUserCategories(existing);
+
+        // Ensure every UI category (+ "Transfer" and "Income") exists in the DB
+        const requiredNames = [...transactionCategories, transferCategory, "Income"];
+        const existingNames = new Set(existing.map((c) => c.name));
+        const missing = requiredNames.filter((n) => !existingNames.has(n));
+
+        const newlyCreated: ExpenseCategory[] = [];
+        for (const name of missing) {
+          try {
+            const cat = await createCategory({ name });
+            newlyCreated.push(cat);
+          } catch {
+            // Ignore duplicates or other errors
+          }
+        }
+
+        if (newlyCreated.length > 0) {
+          setUserCategories((prev) => [...prev, ...newlyCreated]);
+        }
+      } catch {
+        // Backend unreachable — categories will be empty
+      }
+    };
+    syncCategories();
+  }, []);
+
+  /** Resolve a category name to its backend ID for the current user */
+  const resolveCategoryId = async (categoryName: string): Promise<number> => {
+    // Try from cached list first
+    const found = userCategories.find((c) => c.name === categoryName);
+    if (found) return found.id;
+
+    // Not found — create it on the fly
+    const created = await createCategory({ name: categoryName });
+    setUserCategories((prev) => [...prev, created]);
+    return created.id;
+  };
+
   const localFilteredMarketInstruments = useMemo(() => {
     if (!isMarketAsset(investForm.assetClass)) {
       return [];
@@ -119,6 +166,11 @@ export const useAddActivityModalState = () => {
   useEffect(() => {
     if (!isMarketAsset(investForm.assetClass)) {
       setLiveMarketInstruments([]);
+      return;
+    }
+
+    // Skip search when a symbol is already selected (user picked from dropdown)
+    if (investForm.selectedSymbol) {
       return;
     }
 
@@ -161,7 +213,7 @@ export const useAddActivityModalState = () => {
       isActive = false;
       window.clearTimeout(timeoutId);
     };
-  }, [investForm.assetClass, investForm.searchQuery]);
+  }, [investForm.assetClass, investForm.searchQuery, investForm.selectedSymbol]);
 
   const filteredMarketInstruments = useMemo(
     () =>
@@ -241,16 +293,21 @@ export const useAddActivityModalState = () => {
 
     try {
       if (tab === "transaction") {
-        // Persist to expenseService → MySQL
         const expenseDate = transactionForm.dateTime
           ? transactionForm.dateTime.split("T")[0]
           : new Date().toISOString().split("T")[0];
+
+        // Map the selected category name to a real backend category ID
+        const categoryName = transactionForm.category || "Food";
+        // For income use "Income" category, for expense use the selected category
+        const resolvedName = transactionForm.type === "IN" ? "Income" : categoryName;
+        const categoryId = await resolveCategoryId(resolvedName);
 
         await createExpense({
           amount: Number(transactionForm.amount),
           description: transactionForm.title,
           expenseDate,
-          categoryId: 1, // Default category — user can refine later
+          categoryId,
         });
 
         const newTransaction: TransactionEntry = {
@@ -267,19 +324,34 @@ export const useAddActivityModalState = () => {
         };
 
         setTransactionEntries((prev) => [newTransaction, ...prev].slice(0, 5));
-        setMessage("Transaction saved to database successfully.", "success");
+        setMessage(
+          `${transactionForm.type === "IN" ? "Income" : "Expense"} saved to database successfully.`,
+          "success"
+        );
         resetTransactionForm();
       } else {
-        // Transfer: persist as expense with transfer description
+        // Transfer: create TWO expense records — outflow and inflow
         const expenseDate = transferForm.dateTime
           ? transferForm.dateTime.split("T")[0]
           : new Date().toISOString().split("T")[0];
 
+        const transferCatId = await resolveCategoryId("Transfer");
+        const amount = Number(transferForm.amount);
+
+        // 1. Outflow record (money leaving the out-account)
         await createExpense({
-          amount: Number(transferForm.amount),
-          description: `Transfer: ${transferForm.outAccount} → ${transferForm.inAccount} — ${transferForm.title}`,
+          amount,
+          description: `Transfer OUT: ${transferForm.outAccount} → ${transferForm.inAccount} — ${transferForm.title}`,
           expenseDate,
-          categoryId: 1,
+          categoryId: transferCatId,
+        });
+
+        // 2. Inflow record (money arriving at the in-account)
+        await createExpense({
+          amount,
+          description: `Transfer IN: ${transferForm.inAccount} ← ${transferForm.outAccount} — ${transferForm.title}`,
+          expenseDate,
+          categoryId: transferCatId,
         });
 
         const newTransfer: TransferEntry = {
@@ -287,7 +359,7 @@ export const useAddActivityModalState = () => {
           internalTags: [internalSystemTags.transfer],
           dateTime: transferForm.dateTime,
           title: transferForm.title,
-          amount: Number(transferForm.amount),
+          amount,
           outAccount: transferForm.outAccount,
           inAccount: transferForm.inAccount,
           category: transferForm.category,
@@ -296,7 +368,7 @@ export const useAddActivityModalState = () => {
         };
 
         setTransferEntries((prev) => [newTransfer, ...prev].slice(0, 5));
-        setMessage("Transfer saved to database successfully.", "success");
+        setMessage("Transfer saved to database (2 entries: outflow + inflow).", "success");
         resetTransferForm();
       }
     } catch (error) {
@@ -356,7 +428,9 @@ export const useAddActivityModalState = () => {
         fetchedPrice = Number(cryptoData.current_price);
       }
 
-      const resolvedPrice = Number.isFinite(fetchedPrice) ? fetchedPrice : 0;
+      const resolvedPrice = Number.isFinite(fetchedPrice)
+        ? Math.round(fetchedPrice * 100) / 100
+        : 0;
 
       setInvestForm((prev) => {
         const next = {
@@ -562,6 +636,7 @@ export const useAddActivityModalState = () => {
     investForm,
     setInvestForm,
     filteredMarketInstruments,
+    userCategories,
     handleMockSubmit,
     handleInvestSubmit,
     handleInvestAssetClassChange,

@@ -53,6 +53,15 @@ public class ExpenseController {
         return new ResponseEntity<>(expenses, HttpStatus.OK);
     }
     
+    @PutMapping("/expenses/{externalId}")
+    public ResponseEntity<Expense> updateExpense(
+            @RequestHeader("X-User-Id") String userId,
+            @PathVariable String externalId,
+            @RequestBody ExpenseRequestDto dto) {
+        Expense updated = expenseService.updateExpense(userId, externalId, dto);
+        return new ResponseEntity<>(updated, HttpStatus.OK);
+    }
+
     @DeleteMapping("/expenses/{externalId}")
     public ResponseEntity<Void> deleteExpense(
             @RequestHeader("X-User-Id") String userId,

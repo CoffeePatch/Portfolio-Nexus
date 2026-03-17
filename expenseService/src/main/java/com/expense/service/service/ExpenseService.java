@@ -68,4 +68,25 @@ public class ExpenseService {
         
         expenseRepository.delete(expenseOpt.get());
     }
+
+    public Expense updateExpense(String userId, String externalId, ExpenseRequestDto dto) {
+        Optional<Expense> expenseOpt = expenseRepository.findByExternalId(externalId);
+
+        if (expenseOpt.isEmpty() || !expenseOpt.get().getUserId().equals(userId)) {
+            throw new RuntimeException("Expense not found");
+        }
+
+        Optional<ExpenseCategory> categoryOpt = expenseCategoryRepository.findById(dto.getCategoryId());
+        if (categoryOpt.isEmpty() || !categoryOpt.get().getUserId().equals(userId)) {
+            throw new RuntimeException("Category not found");
+        }
+
+        Expense expense = expenseOpt.get();
+        expense.setAmount(dto.getAmount());
+        expense.setDescription(dto.getDescription());
+        expense.setExpenseDate(dto.getExpenseDate());
+        expense.setCategory(categoryOpt.get());
+
+        return expenseRepository.save(expense);
+    }
 }

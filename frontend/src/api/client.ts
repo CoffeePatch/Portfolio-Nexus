@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const API_BASE_URLS = {
-  auth: "http://localhost:9898",
+  auth: "http://localhost:9920",
   portfolio: "http://localhost:9811",
   marketData: "http://localhost:8010",
   user: "http://localhost:9810",

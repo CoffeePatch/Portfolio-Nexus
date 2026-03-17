@@ -1,16 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { MOCK_STOCKS, MOCK_CRYPTO, MOCK_MF, MOCK_MANUAL } from "../api/mock/mockPortfolioService";
-
-// Simulated current prices
-const STOCK_PRICES: Record<string, number> = {
-  RELIANCE: 2540, TATASTEEL: 125, INFY: 1550, HDFCBANK: 1680, ITC: 455, TCS: 3650
-};
-const CRYPTO_PRICES: Record<string, number> = {
-  BTC: 5950000, ETH: 235000, SOL: 5200, DOGE: 14
-};
-const MF_NAVS: Record<string, number> = {
-  "120503": 52.5, "122639": 78.2
-};
+import { getAllHoldings } from "../api/portfolioService";
 
 export type AssetClassSummary = {
   type: string;
@@ -22,127 +11,60 @@ export type AssetClassSummary = {
   count: number;
 };
 
+const makeSummary = (
+  type: string,
+  icon: string,
+  totalInvested: number,
+  totalValue: number,
+  count: number
+): AssetClassSummary => {
+  const gainLoss = totalValue - totalInvested;
+  const gainLossPercent = totalInvested > 0 ? (gainLoss / totalInvested) * 100 : 0;
+  return { type, icon, totalValue, totalInvested, gainLoss, gainLossPercent, count };
+};
+
 export const useAssetClassSummary = () => {
   return useQuery({
     queryKey: ["assetClassSummary"],
     queryFn: async () => {
+      const { stocks, mutualFunds, cryptos, manuals } = await getAllHoldings();
       const summaries: AssetClassSummary[] = [];
 
-      // Process Stocks
-      if (MOCK_STOCKS.length > 0) {
-        let totalValue = 0;
-        let totalInvested = 0;
-        
-        MOCK_STOCKS.forEach((stock) => {
-          const currentPrice = STOCK_PRICES[stock.symbol] || stock.purchasePrice * 1.05;
-          totalValue += stock.quantity * currentPrice;
-          totalInvested += stock.quantity * stock.purchasePrice;
-        });
-
-        const gainLoss = totalValue - totalInvested;
-        const gainLossPercent = totalInvested > 0 ? (gainLoss / totalInvested) * 100 : 0;
-
-        summaries.push({
-          type: "Stocks",
-          icon: "show_chart",
-          totalValue,
-          totalInvested,
-          gainLoss,
-          gainLossPercent,
-          count: MOCK_STOCKS.length,
-        });
+      if (stocks.length > 0) {
+        let inv = 0, val = 0;
+        stocks.forEach((s) => { const c = s.quantity * s.purchasePrice; inv += c; val += c * 1.05; });
+        summaries.push(makeSummary("Stocks", "show_chart", inv, val, stocks.length));
       }
 
-      // Process Crypto
-      if (MOCK_CRYPTO.length > 0) {
-        let totalValue = 0;
-        let totalInvested = 0;
-
-        MOCK_CRYPTO.forEach((crypto) => {
-          const currentPrice = CRYPTO_PRICES[crypto.symbol] || crypto.purchasePrice * 1.1;
-          totalValue += crypto.quantity * currentPrice;
-          totalInvested += crypto.quantity * crypto.purchasePrice;
-        });
-
-        const gainLoss = totalValue - totalInvested;
-        const gainLossPercent = totalInvested > 0 ? (gainLoss / totalInvested) * 100 : 0;
-
-        summaries.push({
-          type: "Crypto",
-          icon: "currency_bitcoin",
-          totalValue,
-          totalInvested,
-          gainLoss,
-          gainLossPercent,
-          count: MOCK_CRYPTO.length,
-        });
+      if (cryptos.length > 0) {
+        let inv = 0, val = 0;
+        cryptos.forEach((c) => { const cost = c.quantity * c.purchasePrice; inv += cost; val += cost * 1.10; });
+        summaries.push(makeSummary("Crypto", "currency_bitcoin", inv, val, cryptos.length));
       }
 
-      // Process Mutual Funds
-      if (MOCK_MF.length > 0) {
-        let totalValue = 0;
-        let totalInvested = 0;
-
-        MOCK_MF.forEach((mf) => {
-          const currentNav = MF_NAVS[mf.schemeCode] || mf.purchasePrice * 1.1;
-          totalValue += mf.quantity * currentNav;
-          totalInvested += mf.quantity * mf.purchasePrice;
-        });
-
-        const gainLoss = totalValue - totalInvested;
-        const gainLossPercent = totalInvested > 0 ? (gainLoss / totalInvested) * 100 : 0;
-
-        summaries.push({
-          type: "Mutual Funds",
-          icon: "pie_chart",
-          totalValue,
-          totalInvested,
-          gainLoss,
-          gainLossPercent,
-          count: MOCK_MF.length,
-        });
+      if (mutualFunds.length > 0) {
+        let inv = 0, val = 0;
+        mutualFunds.forEach((mf) => { const cost = mf.quantity * mf.purchasePrice; inv += cost; val += cost * 1.08; });
+        summaries.push(makeSummary("Mutual Funds", "pie_chart", inv, val, mutualFunds.length));
       }
 
-      // Process Manual Assets (grouped by type)
-      if (MOCK_MANUAL.length > 0) {
-        const manualsByType: { [key: string]: typeof MOCK_MANUAL } = {};
-        MOCK_MANUAL.forEach((manual) => {
-          if (!manualsByType[manual.assetType]) {
-            manualsByType[manual.assetType] = [];
-          }
-          manualsByType[manual.assetType].push(manual);
-        });
+      if (manuals.length > 0) {
+        const iconMap: Record<string, string> = {
+          Gold: "diamond", Silver: "diamond", "Real Estate": "home",
+          NPS: "savings", Bond: "account_balance", FD: "savings",
+        };
+        const byType: Record<string, typeof manuals> = {};
+        manuals.forEach((m) => { (byType[m.assetType] ??= []).push(m); });
 
-        Object.entries(manualsByType).forEach(([assetType, assets]) => {
-          const totalValue = assets.reduce((sum, asset) => sum + asset.currentValue, 0);
-          const totalInvested = assets.reduce((sum, asset) => sum + asset.investedValue, 0);
-          const gainLoss = totalValue - totalInvested;
-          const gainLossPercent = totalInvested > 0 ? (gainLoss / totalInvested) * 100 : 0;
-
-          // Icon mapping for manual asset types
-          const iconMap: { [key: string]: string } = {
-            Gold: "diamond",
-            Silver: "diamond",
-            "Real Estate": "home",
-            NPS: "savings",
-            Bond: "account_balance",
-            Bonds: "account_balance",
-          };
-
-          summaries.push({
-            type: assetType,
-            icon: iconMap[assetType] || "account_balance",
-            totalValue,
-            totalInvested,
-            gainLoss,
-            gainLossPercent,
-            count: assets.length,
-          });
+        Object.entries(byType).forEach(([assetType, assets]) => {
+          const inv = assets.reduce((s, a) => s + a.investedValue, 0);
+          const val = assets.reduce((s, a) => s + a.currentValue, 0);
+          summaries.push(makeSummary(assetType, iconMap[assetType] || "account_balance", inv, val, assets.length));
         });
       }
 
       return summaries;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 };

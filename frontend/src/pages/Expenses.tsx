@@ -1,17 +1,18 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { BudgetStatusCards } from '../components/widgets/BudgetStatusCards';
 import { CashFlowChart } from '../components/widgets/CashFlowChart';
 import { ExpenseCategoryDonut } from '../components/widgets/ExpenseCategoryDonut';
 import { SmartTransactionTable } from '../components/widgets/SmartTransactionTable';
 import { AccountsWidget } from '../components/widgets/AccountsWidget';
-import {
-  cashFlowData,
-  categoryBreakdownData,
-  transactionsData,
-  accountsData,
-  budgetUsageData,
+import { getExpenses } from '../api/expenseService';
+import type { Expense } from '../api/expenseService';
+import type {
+  Transaction,
+  Account,
+  CategoryBreakdown,
+  BudgetCard,
+  CashFlowData,
 } from '../data/expenseDummyData';
-import type { BudgetCard } from '../data/expenseDummyData';
 
 type TimePeriod = 'weekly' | 'monthly' | 'yearly';
 
@@ -52,17 +53,87 @@ const periodData: Record<TimePeriod, { income: number; expense: number; incomeCh
   },
 };
 
+const CATEGORY_COLORS = [
+  "#6366f1", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#14b8a6", "#f97316", "#ef4444",
+];
+
 const Expenses = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('monthly');
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+
+  useEffect(() => {
+    getExpenses().then(setExpenses).catch(() => setExpenses([]));
+  }, []);
+
+  // Derive transactions from real expenses
+  const transactionsData = useMemo<Transaction[]>(
+    () =>
+      expenses
+        .map((e) => {
+          const catName = e.category?.name || "Uncategorized";
+          let type: Transaction["type"] = "expense";
+          if (e.description?.startsWith("Transfer:")) type = "transfer";
+          else if (catName === "Income") type = "income";
+          return {
+            id: e.externalId,
+            date: e.expenseDate,
+            category: catName,
+            description: e.description,
+            account: "Bank",
+            amount: e.amount,
+            type,
+            status: "completed" as const,
+          };
+        })
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+    [expenses]
+  );
+
+  // Derive category breakdown
+  const categoryBreakdownData = useMemo<CategoryBreakdown[]>(() => {
+    const catMap: Record<string, number> = {};
+    expenses.forEach((e) => {
+      const cat = e.category?.name || "Other";
+      catMap[cat] = (catMap[cat] || 0) + e.amount;
+    });
+    const total = Object.values(catMap).reduce((s, v) => s + v, 0) || 1;
+    return Object.entries(catMap).map(([category, amount], i) => ({
+      category,
+      amount,
+      color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+      percentage: Math.round((amount / total) * 100),
+    }));
+  }, [expenses]);
+
+  // Derive cash flow (group by month)
+  const cashFlowData = useMemo<CashFlowData[]>(() => {
+    const monthMap: Record<string, number> = {};
+    expenses.forEach((e) => {
+      const m = e.expenseDate?.slice(0, 7) || "unknown"; // YYYY-MM
+      monthMap[m] = (monthMap[m] || 0) + e.amount;
+    });
+    return Object.entries(monthMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, expense]) => ({ date, income: 0, expense }));
+  }, [expenses]);
+
+  const totalExpense = expenses.reduce((s, e) => s + e.amount, 0);
+
+  // Default accounts (no real API for accounts)
+  const accountsData: Account[] = [
+    { id: "1", name: "Primary Bank", type: "bank", balance: 0, icon: "account_balance", color: "#6366f1" },
+  ];
+
+  const budgetUsageData = { usedBudget: totalExpense, totalBudget: Math.max(totalExpense * 1.2, 50000) };
 
   // Generate budget cards based on selected period
   const budgetCards = useMemo<BudgetCard[]>(() => {
-    const data = periodData[selectedPeriod];
-    const netCashFlow = data.income - data.expense;
+    const pd = periodData[selectedPeriod];
+    const netCashFlow = pd.income - pd.expense;
     
     // Calculate net flow change percentage (comparing to previous period estimate)
-    const previousNetFlow = data.trends.netFlow[data.trends.netFlow.length - 2] || 1;
-    const currentNetFlow = data.trends.netFlow[data.trends.netFlow.length - 1];
+    const previousNetFlow = pd.trends.netFlow[pd.trends.netFlow.length - 2] || 1;
+    const currentNetFlow = pd.trends.netFlow[pd.trends.netFlow.length - 1];
     const netFlowChange = previousNetFlow !== 0 
       ? Math.round(((currentNetFlow - previousNetFlow) / Math.abs(previousNetFlow)) * 100 * 10) / 10
       : 0;
@@ -70,17 +141,17 @@ const Expenses = () => {
     return [
       {
         title: 'Total Income',
-        amount: data.income,
-        change: Math.round(data.incomeChange * 10) / 10,
-        trend: data.trends.income,
+        amount: pd.income,
+        change: Math.round(pd.incomeChange * 10) / 10,
+        trend: pd.trends.income,
         icon: 'trending_up',
         color: 'from-green-500/20 to-emerald-500/20',
       },
       {
         title: 'Total Expenses',
-        amount: data.expense,
-        change: Math.round(data.expenseChange * 10) / 10,
-        trend: data.trends.expense,
+        amount: totalExpense || pd.expense,
+        change: Math.round(pd.expenseChange * 10) / 10,
+        trend: pd.trends.expense,
         icon: 'trending_down',
         color: 'from-red-500/20 to-rose-500/20',
       },
@@ -88,12 +159,12 @@ const Expenses = () => {
         title: 'Net Cash Flow',
         amount: netCashFlow,
         change: netFlowChange,
-        trend: data.trends.netFlow,
+        trend: pd.trends.netFlow,
         icon: 'account_balance',
         color: 'from-blue-500/20 to-cyan-500/20',
       },
     ];
-  }, [selectedPeriod]);
+  }, [selectedPeriod, totalExpense]);
 
   // Period label for display
   const periodLabels: Record<TimePeriod, string> = {

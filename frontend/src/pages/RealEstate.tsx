@@ -1,17 +1,44 @@
 // src/pages/RealEstate.tsx
 // Comprehensive Real Estate Portfolio Page for Builders & Investors
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { RealEstateSummaryCard } from "../components/widgets/RealEstateSummaryCard";
 import { PropertyValueChart } from "../components/widgets/PropertyValueChart";
 import { PropertyAllocationChart } from "../components/widgets/PropertyAllocationChart";
 import { RealEstateMetrics } from "../components/widgets/RealEstateMetrics";
 import { PropertyHoldingsTable } from "../components/widgets/PropertyHoldingsTable";
-import { realEstateSummary } from "../data/mockRealEstateData";
+import { getManualHoldings } from "../api/portfolioService";
 import { AssetPageShell } from "../components/shared/AssetPageShell";
 import { RealEstateExplorer } from "./explorers";
 
-const RealEstatePortfolio: React.FC = () => (
+const RealEstatePortfolio: React.FC = () => {
+  const [realEstateSummary, setRealEstateSummary] = useState({
+    currentPortfolioValue: 0, totalInvestment: 0, totalAppreciation: 0,
+    appreciationPercent: 0, netEquity: 0, totalRentalIncome: 0,
+    totalProperties: 0, averageRentalYield: 0,
+  });
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const manuals = await getManualHoldings();
+        const properties = manuals.filter((m) => m.assetType === "Real Estate");
+        const invested = properties.reduce((s, p) => s + p.investedValue, 0);
+        const current = properties.reduce((s, p) => s + p.currentValue, 0);
+        const appreciation = current - invested;
+        setRealEstateSummary({
+          currentPortfolioValue: current, totalInvestment: invested,
+          totalAppreciation: appreciation,
+          appreciationPercent: invested > 0 ? (appreciation / invested) * 100 : 0,
+          netEquity: current, totalRentalIncome: 0,
+          totalProperties: properties.length, averageRentalYield: 0,
+        });
+      } catch { /* leave defaults */ }
+    };
+    load();
+  }, []);
+
+  return (
   <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
       {/* Main Content - p-8 like other pages */}
@@ -68,7 +95,8 @@ const RealEstatePortfolio: React.FC = () => (
 
       </div>
     </div>
-);
+  );
+};
 
 const RealEstate: React.FC = () => (
   <AssetPageShell

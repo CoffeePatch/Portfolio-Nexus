@@ -44,7 +44,7 @@ services:
     container_name: authservice
     restart: on-failure
     ports:
-      - "9898:9898"
+      - "9920:9898"
     depends_on:
       mysql:
         condition: service_healthy

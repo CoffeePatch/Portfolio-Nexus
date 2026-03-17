@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMockStockPrice, getMockCryptoPrice } from "../../api/mock/mockMarketService";
+import { getStockPrice, getCryptoPrice } from "../../api/marketDataService";
 import { MarketRow } from "./MarketRow";
 
 // Define what we display
@@ -15,33 +15,41 @@ export const MarketTable = () => {
   const [items, setItems] = useState<MarketItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load initial "Base" data from our Mock Service
+  // Load initial data from real market data service
   useEffect(() => {
     const loadData = async () => {
-      // Define the assets we want to track
       const stockSymbols = ["RELIANCE", "TCS", "INFY", "HDFCBANK", "ITC", "TATASTEEL"];
-      const cryptoIds = ["bitcoin", "ethereum", "solana", "dogecoin"];
+      const cryptoIds = ["bitcoin", "ethereum", "solana"];
+
+      const nameMap: Record<string, string> = {
+        RELIANCE: "Reliance Industries", TCS: "Tata Consultancy Services",
+        INFY: "Infosys Limited", HDFCBANK: "HDFC Bank", ITC: "ITC Limited", TATASTEEL: "Tata Steel",
+      };
+
+      // Fallback prices if API fails
+      const fallbackStock: Record<string, number> = {
+        RELIANCE: 2540, TCS: 3650, INFY: 1550, HDFCBANK: 1680, ITC: 455, TATASTEEL: 125,
+      };
+      const fallbackCrypto: Record<string, number> = {
+        bitcoin: 5950000, ethereum: 235000, solana: 5200,
+      };
 
       const stockPromises = stockSymbols.map(async (sym) => {
-        const data = await getMockStockPrice(sym);
-        return {
-          id: sym,
-          symbol: sym,
-          name: sym === "RELIANCE" ? "Reliance Industries" : sym === "TCS" ? "Tata Consultancy Services" : sym === "INFY" ? "Infosys Limited" : sym === "HDFCBANK" ? "HDFC Bank" : sym === "ITC" ? "ITC Limited" : "Tata Steel", // Simple mapping for demo
-          basePrice: data.current_price, // This becomes the anchor for the row
-          type: 'stock' as const
-        };
+        try {
+          const data = await getStockPrice(sym);
+          return { id: sym, symbol: sym, name: nameMap[sym] || sym, basePrice: data.current_price, type: 'stock' as const };
+        } catch {
+          return { id: sym, symbol: sym, name: nameMap[sym] || sym, basePrice: fallbackStock[sym] || 500, type: 'stock' as const };
+        }
       });
 
       const cryptoPromises = cryptoIds.map(async (id) => {
-        const data = await getMockCryptoPrice(id);
-        return {
-          id: id,
-          symbol: data.symbol.toUpperCase(),
-          name: data.name,
-          basePrice: data.current_price,
-          type: 'crypto' as const
-        };
+        try {
+          const data = await getCryptoPrice(id);
+          return { id, symbol: data.symbol?.toUpperCase() || id.toUpperCase(), name: data.name || id, basePrice: data.current_price, type: 'crypto' as const };
+        } catch {
+          return { id, symbol: id.toUpperCase(), name: id, basePrice: fallbackCrypto[id] || 1000, type: 'crypto' as const };
+        }
       });
 
       const allData = await Promise.all([...stockPromises, ...cryptoPromises]);

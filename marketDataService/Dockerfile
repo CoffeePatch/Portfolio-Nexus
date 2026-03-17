@@ -1,10 +1,11 @@
 FROM --platform=linux/amd64 python:3.11.4
 WORKDIR /app
 
-# Copy the distribution package
-COPY dist/ds_service-1.0.tar.gz .
-# Install the distribution package
-RUN pip install --no-cache-dir ds_service-1.0.tar.gz
+# Copy source and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/ src/
 
 # Set the environment variable for the Flask app
 ENV FLASK_APP=src/app/__init__.py

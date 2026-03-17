@@ -9,12 +9,14 @@ import {
 } from "./constants";
 import { formatAmount } from "./utils";
 import type { TransactionEntry, TransactionForm, TransactionType } from "./types";
+import type { ExpenseCategory } from "../../../api/expenseService";
 
 type TransactionTabProps = {
   form: TransactionForm;
   setForm: React.Dispatch<React.SetStateAction<TransactionForm>>;
   isSubmitting: boolean;
   entries: TransactionEntry[];
+  userCategories: ExpenseCategory[];
   onClose: () => void;
   onSubmit: (e: FormEvent) => void;
 };
@@ -24,9 +26,14 @@ export const TransactionTab = ({
   setForm,
   isSubmitting,
   entries,
+  userCategories,
   onClose,
   onSubmit,
 }: TransactionTabProps) => {
+  // Build category list: prefer real DB categories, fallback to hardcoded list
+  const categoryNames = userCategories.length > 0
+    ? [...new Set(userCategories.filter((c) => c.name !== "Transfer").map((c) => c.name))]
+    : transactionCategories;
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -109,7 +116,7 @@ export const TransactionTab = ({
             onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
             required
           >
-            {transactionCategories.map((category) => (
+            {categoryNames.map((category) => (
               <option key={category} value={category}>{category}</option>
             ))}
           </select>

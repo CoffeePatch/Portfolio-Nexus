@@ -133,7 +133,7 @@ export const InvestTab = ({
               placeholder="Type Tata / TCS / Bitcoin"
               required
             />
-            {filteredMarketInstruments.length > 0 && (
+            {filteredMarketInstruments.length > 0 && !form.selectedSymbol && (
               <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-xl border border-slate-700/70 bg-slate-900 shadow-xl">
                 {filteredMarketInstruments.map((instrument) => (
                   <button

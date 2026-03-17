@@ -9,7 +9,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading } = useAuth();
 
   // DEVELOPMENT MODE: Skip authentication for frontend-only testing
-  const DEV_MODE = true; // Set to false when backend is ready
+  const DEV_MODE = false; // Set to true for frontend-only testing
   
   if (DEV_MODE) {
     return <>{children}</>;

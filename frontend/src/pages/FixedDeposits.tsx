@@ -1,9 +1,10 @@
+import { useEffect, useState } from 'react';
 import { FDSummaryCard } from '../components/widgets/FDSummaryCard';
 import { FDInterestChart } from '../components/widgets/FDInterestChart';
 import { FDTypeAllocation } from '../components/widgets/FDTypeAllocation';
 import { UpcomingMaturities } from '../components/widgets/UpcomingMaturities';
 import { FDHoldingsTable } from '../components/widgets/FDHoldingsTable';
-import { fdSummary } from '../data/mockFDData';
+import { getManualHoldings } from '../api/portfolioService';
 import { AssetPageShell } from '../components/shared/AssetPageShell';
 import { FixedDepositsExplorer } from './explorers';
 
@@ -15,7 +16,32 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
-const FDPortfolio = () => (
+const FDPortfolio = () => {
+  const [fdSummary, setFdSummary] = useState({
+    totalInvested: 0, totalInterestAccrued: 0, activeDeposits: 0,
+    averageInterestRate: 7.0, upcomingMaturities: 0,
+  });
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const manuals = await getManualHoldings();
+        const fds = manuals.filter((m) => m.assetType === "FD");
+        const invested = fds.reduce((s, f) => s + f.investedValue, 0);
+        const current = fds.reduce((s, f) => s + f.currentValue, 0);
+        setFdSummary({
+          totalInvested: invested,
+          totalInterestAccrued: current - invested,
+          activeDeposits: fds.length,
+          averageInterestRate: invested > 0 ? ((current - invested) / invested) * 100 : 0,
+          upcomingMaturities: fds.filter((f) => f.maturityDate).length,
+        });
+      } catch { /* leave defaults */ }
+    };
+    load();
+  }, []);
+
+  return (
   <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
       <div className="relative z-10 p-8">
@@ -86,7 +112,8 @@ const FDPortfolio = () => (
         </div>
       </div>
     </div>
-);
+  );
+};
 
 const FixedDeposits = () => (
   <AssetPageShell

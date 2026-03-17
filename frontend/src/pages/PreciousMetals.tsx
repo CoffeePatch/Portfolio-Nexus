@@ -1,17 +1,44 @@
 // src/pages/PreciousMetals.tsx
 // Redesigned to match Crypto page layout with glass effect
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { MetalsSummaryCard } from "../components/widgets/MetalsSummaryCard";
 import { MetalPriceChart } from "../components/widgets/MetalPriceChart";
 import { MetalAllocationChart } from "../components/widgets/MetalAllocationChart";
 import { MetalHoldingsTable } from "../components/widgets/MetalHoldingsTable";
 import { MetalMarketRates } from "../components/widgets/MetalMarketRates";
-import { metalSummary } from "../data/mockMetalsData";
+import { getManualHoldings } from "../api/portfolioService";
 import { AssetPageShell } from "../components/shared/AssetPageShell";
 import { MetalsExplorer } from "./explorers";
 
-const MetalsPortfolio: React.FC = () => (
+const MetalsPortfolio: React.FC = () => {
+  const [metalSummary, setMetalSummary] = useState({
+    currentValue: 0, totalInvested: 0, totalProfitLoss: 0,
+    overallReturn: 0, totalWeightGold: "0g", totalWeightSilver: "0g", totalItems: 0,
+  });
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const manuals = await getManualHoldings();
+        const metals = manuals.filter((m) => m.assetType === "Gold" || m.assetType === "Silver");
+        const invested = metals.reduce((s, m) => s + m.investedValue, 0);
+        const current = metals.reduce((s, m) => s + m.currentValue, 0);
+        const gain = current - invested;
+        const goldCount = metals.filter((m) => m.assetType === "Gold").length;
+        const silverCount = metals.filter((m) => m.assetType === "Silver").length;
+        setMetalSummary({
+          currentValue: current, totalInvested: invested, totalProfitLoss: gain,
+          overallReturn: invested > 0 ? (gain / invested) * 100 : 0,
+          totalWeightGold: `${goldCount} items`, totalWeightSilver: `${silverCount} items`,
+          totalItems: metals.length,
+        });
+      } catch { /* leave defaults */ }
+    };
+    load();
+  }, []);
+
+  return (
   <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
       {/* Main Content - p-8 like Crypto */}
@@ -67,7 +94,8 @@ const MetalsPortfolio: React.FC = () => (
 
       </div>
     </div>
-);
+  );
+};
 
 const PreciousMetals: React.FC = () => (
   <AssetPageShell

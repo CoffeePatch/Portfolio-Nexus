@@ -1,17 +1,47 @@
 // src/pages/Stocks.tsx
 // Redesigned to match MutualFunds page layout with glass effect
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { MarketTicker } from "../components/market/MarketTicker";
 import StockSummaryCard from "../components/widgets/StockSummaryCard";
 import StockGrowthChart from "../components/widgets/StockGrowthChart";
 import SectorAllocationWidget from "../components/widgets/SectorAllocationWidget";
 import StockHoldingsTable from "../components/widgets/StockHoldingsTable";
-import { mockStockSummary } from "../data/mockStockData";
+import { getStockHoldings } from "../api/portfolioService";
+import { getStockPrice } from "../api/marketDataService";
 import { AssetPageShell } from "../components/shared/AssetPageShell";
 import { StocksExplorer } from "./explorers";
 
-const StocksPortfolio: React.FC = () => (
+const StocksPortfolio: React.FC = () => {
+  const [summary, setSummary] = useState({
+    totalCurrentValue: 0, totalInvested: 0, totalGain: 0,
+    totalReturnPercent: 0, dayPnL: 0, dayPnLPercent: 0,
+  });
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const holdings = await getStockHoldings();
+        let invested = 0, current = 0;
+        await Promise.all(holdings.map(async (h) => {
+          const inv = h.quantity * h.purchasePrice;
+          invested += inv;
+          try {
+            const p = await getStockPrice(h.symbol);
+            current += h.quantity * p.current_price;
+          } catch {
+            current += inv * 1.05;
+          }
+        }));
+        const gain = current - invested;
+        const retPct = invested > 0 ? (gain / invested) * 100 : 0;
+        setSummary({ totalCurrentValue: current, totalInvested: invested, totalGain: gain, totalReturnPercent: retPct, dayPnL: 0, dayPnLPercent: 0 });
+      } catch { /* leave defaults */ }
+    };
+    load();
+  }, []);
+
+  return (
   <div className="relative min-h-screen w-full bg-transparent font-sans text-slate-200">
 
     {/* Market Ticker - Positioned in gradient header area */}
@@ -32,18 +62,18 @@ const StocksPortfolio: React.FC = () => (
             <div className="rounded-3xl border border-white/10 bg-black/70 p-6 backdrop-blur-xl">
               <h1 className="mb-2 text-2xl font-bold text-white">Overall Stock Portfolio</h1>
               <div className="mb-4 flex gap-6 text-xs text-slate-400">
-                <span>My Balance <span className="text-emerald-400">▲ +{mockStockSummary.totalReturnPercent.toFixed(1)}%</span></span>
-                <span>Day P&L <span className={mockStockSummary.dayPnL >= 0 ? "text-emerald-400" : "text-red-400"}>
-                  {mockStockSummary.dayPnL >= 0 ? "▲" : "▼"} {mockStockSummary.dayPnLPercent >= 0 ? "+" : ""}{mockStockSummary.dayPnLPercent.toFixed(2)}%
+                <span>My Balance <span className="text-emerald-400">▲ +{summary.totalReturnPercent.toFixed(1)}%</span></span>
+                <span>Day P&L <span className={summary.dayPnL >= 0 ? "text-emerald-400" : "text-red-400"}>
+                  {summary.dayPnL >= 0 ? "▲" : "▼"} {summary.dayPnLPercent >= 0 ? "+" : ""}{summary.dayPnLPercent.toFixed(2)}%
                 </span></span>
               </div>
               <StockSummaryCard
-                currentValue={mockStockSummary.totalCurrentValue}
-                investedAmount={mockStockSummary.totalInvested}
-                totalGain={mockStockSummary.totalGain}
-                totalReturnPercent={mockStockSummary.totalReturnPercent}
-                dayPnL={mockStockSummary.dayPnL}
-                dayPnLPercent={mockStockSummary.dayPnLPercent}
+                currentValue={summary.totalCurrentValue}
+                investedAmount={summary.totalInvested}
+                totalGain={summary.totalGain}
+                totalReturnPercent={summary.totalReturnPercent}
+                dayPnL={summary.dayPnL}
+                dayPnLPercent={summary.dayPnLPercent}
               />
             </div>
 
@@ -69,7 +99,8 @@ const StocksPortfolio: React.FC = () => (
 
       </div>
     </div>
-);
+  );
+};
 
 const Stocks: React.FC = () => (
   <AssetPageShell

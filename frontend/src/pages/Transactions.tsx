@@ -1,6 +1,14 @@
 import { useState, useMemo, useCallback } from "react";
 import { useAllTransactions } from "../hooks/useAllTransactions";
 import type { UnifiedTransaction, TransactionType } from "../hooks/useAllTransactions";
+import { deleteExpense, updateExpense, getCategories } from "../api/expenseService";
+import type { ExpenseCategory } from "../api/expenseService";
+import {
+  deleteStockHolding,
+  deleteMutualFundHolding,
+  deleteCryptoHolding,
+  deleteManualHolding,
+} from "../api/portfolioService";
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                           */
@@ -37,7 +45,7 @@ const ColumnFilter = ({
     aria-label={`Filter by ${label}`}
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="rounded-lg border border-slate-700/60 bg-black px-2 py-1.5 text-xs text-slate-300 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500/40"
+    className="rounded-lg border border-slate-700/60 bg-black px-2 py-1.5 text-xs text-slate-300 transition-all hover:border-slate-500 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400/30"
   >
     <option value="__all__">All {label}</option>
     {options.map((o) => (
@@ -239,6 +247,77 @@ const Transactions = () => {
     globalSearch || typeFilter !== "__all__" || categoryFilter !== "__all__" ||
     directionFilter !== "__all__" || accountFilter !== "__all__" || dateFrom || dateTo;
 
+  /* ---------- edit / delete state ---------- */
+
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editingTx, setEditingTx] = useState<UnifiedTransaction | null>(null);
+  const [editForm, setEditForm] = useState({ description: "", amount: "", date: "", categoryId: 0 });
+  const [editCategories, setEditCategories] = useState<ExpenseCategory[]>([]);
+  const [editSaving, setEditSaving] = useState(false);
+
+  /* ---------- delete handler ---------- */
+
+  const handleDelete = async (t: UnifiedTransaction) => {
+    if (!confirm(`Delete "${t.description}"?`)) return;
+    setDeletingId(t.id);
+    try {
+      if (t.source === "expenseService") {
+        await deleteExpense(t.externalId);
+      } else {
+        // portfolio holdings: determine type
+        if (t.type === "Stock Buy") await deleteStockHolding(t.externalId);
+        else if (t.type === "MF Buy") await deleteMutualFundHolding(t.externalId);
+        else if (t.type === "Crypto Buy") await deleteCryptoHolding(t.externalId);
+        else await deleteManualHolding(t.externalId);
+      }
+      refetch();
+    } catch {
+      alert("Failed to delete. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  /* ---------- edit handler ---------- */
+
+  const openEdit = async (t: UnifiedTransaction) => {
+    if (t.source !== "expenseService") return;
+    setEditingTx(t);
+    setEditForm({
+      description: t.description,
+      amount: String(t.amount),
+      date: t.date,
+      categoryId: 0,
+    });
+    try {
+      const cats = await getCategories();
+      setEditCategories(cats);
+      const match = cats.find((c) => c.name === t.category);
+      if (match) setEditForm((f) => ({ ...f, categoryId: match.id }));
+    } catch {
+      setEditCategories([]);
+    }
+  };
+
+  const handleEditSave = async () => {
+    if (!editingTx) return;
+    setEditSaving(true);
+    try {
+      await updateExpense(editingTx.externalId, {
+        amount: parseFloat(editForm.amount),
+        description: editForm.description,
+        expenseDate: editForm.date,
+        categoryId: editForm.categoryId,
+      });
+      setEditingTx(null);
+      refetch();
+    } catch {
+      alert("Failed to save. Please try again.");
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
   /* ================================================================== */
   /*  RENDER                                                            */
   /* ================================================================== */
@@ -357,20 +436,20 @@ const Transactions = () => {
       {/* -------- Spreadsheet table -------- */}
       <div className="rounded-xl border border-slate-800/50 bg-gradient-to-br from-[#000] via-[#0a0a0a] to-[#000] shadow-2xl">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1100px]">
+          <table className="w-full min-w-[1200px]">
             <thead className="sticky top-0 z-10 bg-black/95 backdrop-blur-sm">
               <tr className="border-b border-slate-800/70">
                 {([
                   { key: "date", label: "Date", align: "left", width: "w-[130px]" },
                   { key: "type", label: "Type", align: "left", width: "w-[130px]" },
-                  { key: "description", label: "Description", align: "left", width: "min-w-[220px]" },
+                  { key: "description", label: "Description", align: "left", width: "min-w-[200px]" },
                   { key: "category", label: "Category", align: "left", width: "w-[140px]" },
                   { key: "amount", label: "Amount", align: "right", width: "w-[140px]" },
                   { key: "direction", label: "Flow", align: "center", width: "w-[80px]" },
                   { key: "quantity", label: "Qty", align: "right", width: "w-[100px]" },
                   { key: "pricePerUnit", label: "Price/Unit", align: "right", width: "w-[120px]" },
                   { key: "account", label: "Account", align: "left", width: "w-[120px]" },
-                  { key: "tags", label: "Tags", align: "left", width: "w-[140px]" },
+                  { key: "tags", label: "Tags", align: "left", width: "w-[120px]" },
                 ] as { key: SortKey; label: string; align: string; width: string }[]).map(
                   (col) => (
                     <th
@@ -387,6 +466,9 @@ const Transactions = () => {
                     </th>
                   )
                 )}
+                <th className="w-[90px] px-3 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Actions
+                </th>
               </tr>
             </thead>
 
@@ -394,7 +476,7 @@ const Transactions = () => {
               {isLoading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <tr key={`skel-${i}`}>
-                    {Array.from({ length: 10 }).map((_, j) => (
+                    {Array.from({ length: 11 }).map((_, j) => (
                       <td key={j} className="px-3 py-3">
                         <div className="h-4 w-full animate-pulse rounded bg-slate-800/60" />
                       </td>
@@ -403,7 +485,7 @@ const Transactions = () => {
                 ))
               ) : paged.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-16 text-center">
+                  <td colSpan={11} className="py-16 text-center">
                     <span
                       className="material-symbols-outlined text-5xl text-slate-700"
                       style={{ fontVariationSettings: "'FILL' 0, 'wght' 200" }}
@@ -502,6 +584,31 @@ const Transactions = () => {
                           ))}
                         </div>
                       </td>
+
+                      {/* Actions */}
+                      <td className="px-3 py-3">
+                        <div className="flex items-center justify-center gap-1">
+                          {t.source === "expenseService" && (
+                            <button
+                              title="Edit"
+                              onClick={() => openEdit(t)}
+                              className="rounded-lg p-1.5 text-slate-500 transition-all hover:bg-slate-800 hover:text-blue-400"
+                            >
+                              <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}>edit</span>
+                            </button>
+                          )}
+                          <button
+                            title="Delete"
+                            onClick={() => handleDelete(t)}
+                            disabled={deletingId === t.id}
+                            className="rounded-lg p-1.5 text-slate-500 transition-all hover:bg-slate-800 hover:text-red-400 disabled:opacity-30"
+                          >
+                            <span className={`material-symbols-outlined text-base ${deletingId === t.id ? "animate-spin" : ""}`} style={{ fontVariationSettings: "'FILL' 0, 'wght' 300" }}>
+                              {deletingId === t.id ? "progress_activity" : "delete"}
+                            </span>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })
@@ -519,7 +626,7 @@ const Transactions = () => {
               <select
                 value={pageSize}
                 onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-                className="rounded-lg border border-slate-700/60 bg-black px-2 py-1 text-xs text-slate-300 focus:outline-none"
+                className="rounded-lg border border-slate-700/60 bg-black px-2 py-1 text-xs text-slate-300 transition-all hover:border-slate-500 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400/30"
               >
                 {PAGE_SIZES.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -566,6 +673,78 @@ const Transactions = () => {
           </div>
         )}
       </div>
+
+      {/* -------- Edit Modal -------- */}
+      {editingTx && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-slate-700/60 bg-[#0a0a0a] p-6 shadow-2xl">
+            <h2 className="mb-4 text-lg font-semibold text-white">Edit Transaction</h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-400">Description</label>
+                <input
+                  type="text"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-700/60 bg-black px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400/30"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-400">Amount</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editForm.amount}
+                    onChange={(e) => setEditForm((f) => ({ ...f, amount: e.target.value }))}
+                    className="w-full rounded-xl border border-slate-700/60 bg-black px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400/30"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-400">Date</label>
+                  <input
+                    type="date"
+                    value={editForm.date}
+                    onChange={(e) => setEditForm((f) => ({ ...f, date: e.target.value }))}
+                    className="w-full rounded-xl border border-slate-700/60 bg-black px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400/30"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-slate-400">Category</label>
+                <select
+                  value={editForm.categoryId}
+                  onChange={(e) => setEditForm((f) => ({ ...f, categoryId: Number(e.target.value) }))}
+                  className="w-full rounded-xl border border-slate-700/60 bg-black px-4 py-2.5 text-sm text-white focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-400/30"
+                >
+                  {editCategories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => setEditingTx(null)}
+                disabled={editSaving}
+                className="flex-1 rounded-xl border border-slate-700/60 bg-black px-4 py-2.5 text-sm font-medium text-slate-300 transition-all hover:border-slate-500 hover:bg-slate-900 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditSave}
+                disabled={editSaving || !editForm.description || !editForm.amount || !editForm.categoryId}
+                className="flex-1 rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-semibold text-black transition-all hover:bg-white disabled:opacity-50"
+              >
+                {editSaving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

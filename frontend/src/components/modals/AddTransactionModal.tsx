@@ -32,6 +32,7 @@ export const AddTransactionModal = ({
     investForm,
     setInvestForm,
     filteredMarketInstruments,
+    userCategories,
     handleMockSubmit,
     handleInvestSubmit,
     handleInvestAssetClassChange,
@@ -119,6 +120,7 @@ export const AddTransactionModal = ({
             setForm={setTransactionForm}
             isSubmitting={isSubmitting}
             entries={transactionEntries}
+            userCategories={userCategories}
             onClose={onClose}
             onSubmit={(e) => handleMockSubmit(e, "transaction")}
           />

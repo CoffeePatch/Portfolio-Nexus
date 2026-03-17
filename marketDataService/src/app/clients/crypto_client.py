@@ -10,6 +10,10 @@ CACHE_DURATION = 24 * 60 * 60  # 24 hours in seconds
 COINGECKO_LIST_URL = "https://api.coingecko.com/api/v3/coins/list"
 COINGECKO_PRICE_URL = "https://api.coingecko.com/api/v3/simple/price"
 
+# In-memory price cache
+_price_cache = {}
+PRICE_CACHE_TTL = 120  # 2 minutes
+
 
 def get_coin_list():
     """
@@ -88,9 +92,15 @@ def search_crypto(query):
 def get_crypto_price(coin_id):
     """
     Get the current price of a cryptocurrency in USD.
-    
-    Returns the price as a float, or None if not found.
+    Cached for 2 minutes.
     """
+    now = time.time()
+    cache_key = coin_id.lower().strip()
+    if cache_key in _price_cache:
+        val, ts = _price_cache[cache_key]
+        if now - ts < PRICE_CACHE_TTL:
+            return val
+
     try:
         params = {
             'ids': coin_id,
@@ -104,7 +114,9 @@ def get_crypto_price(coin_id):
         
         # Check if the coin_id exists in the response
         if coin_id in data and 'usd' in data[coin_id]:
-            return data[coin_id]['usd']
+            price = data[coin_id]['usd']
+            _price_cache[cache_key] = (price, now)
+            return price
         
         return None
     except Exception as e:

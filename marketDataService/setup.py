@@ -25,6 +25,7 @@ install_requires = [
     'fastjsonschema==2.19.1',
     'filelock==3.13.4',
     'Flask==3.0.3',
+    'Flask-Cors',
     'frozenlist==1.4.1',
     'fsspec==2024.3.1',
     'h11==0.14.0',

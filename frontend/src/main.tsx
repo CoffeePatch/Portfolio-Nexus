@@ -37,7 +37,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <App />, // Removed ProtectedRoute wrapper for dev mode
+    element: <ProtectedRoute><App /></ProtectedRoute>,
     children: [
       { index: true, element: <Dashboard /> },
       { path: "portfolio", element: <Portfolio /> },

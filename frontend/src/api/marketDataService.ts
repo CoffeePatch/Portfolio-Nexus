@@ -70,13 +70,45 @@ export const getStockPrice = async (symbol: string): Promise<StockPrice> => {
 export const getMutualFundPrice = async (
   schemeCode: string
 ): Promise<MutualFundPrice> => {
-  const response = await marketDataClient.get(`/price/mf/${schemeCode}`);
-  return response.data;
+  try {
+    const response = await marketDataClient.get(`/price/mf/${schemeCode}`);
+    const data = response.data;
+
+    // Backend returns {scheme_code, nav} where nav may be a string
+    return {
+      scheme_code: data.scheme_code || schemeCode,
+      scheme_name: data.scheme_name || '',
+      nav: typeof data.nav === 'string' ? parseFloat(data.nav) : data.nav,
+      date: data.date || new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error(`Failed to fetch MF NAV for ${schemeCode}`, error);
+    throw error;
+  }
 };
 
 export const getCryptoPrice = async (coinId: string): Promise<CryptoPrice> => {
-  const response = await marketDataClient.get(`/price/crypto/${coinId}`);
-  return response.data;
+  try {
+    const response = await marketDataClient.get(`/price/crypto/${coinId}`);
+    const data = response.data;
+
+    // Backend returns {id, price, currency} — map to CryptoPrice shape
+    return {
+      coin_id: data.id || coinId,
+      name: data.name || coinId,
+      symbol: data.symbol || coinId,
+      current_price: data.price,
+      price_change_24h: 0,
+      price_change_percentage_24h: 0,
+      market_cap: 0,
+      total_volume: 0,
+      high_24h: data.price,
+      low_24h: data.price,
+    };
+  } catch (error) {
+    console.error(`Failed to fetch crypto price for ${coinId}`, error);
+    throw error;
+  }
 };
 
 export const searchAi = async (message: string): Promise<AiSearchResponse> => {

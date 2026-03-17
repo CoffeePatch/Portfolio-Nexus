@@ -1,8 +1,58 @@
-import { LineChart, Line, ResponsiveContainer } from "recharts";
-import { mockFunds } from "../../data/mockMutualFundData";
+import { useEffect, useState } from "react";
+import { getMutualFundHoldings } from "../../api/portfolioService";
+import type { MutualFundHolding } from "../../api/portfolioService";
+import { getMutualFundPrice } from "../../api/marketDataService";
+
+interface EnrichedFund {
+  id: number;
+  name: string;
+  schemeCode: string;
+  category: string;
+  nav: number;
+  units: number;
+  investedAmount: number;
+  currentValue: number;
+  xirr: number;
+}
 
 export const FundHoldingsTable = () => {
-  const funds = mockFunds;
+  const [funds, setFunds] = useState<EnrichedFund[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const holdings: MutualFundHolding[] = await getMutualFundHoldings();
+        const enriched = await Promise.all(
+          holdings.map(async (h) => {
+            const invested = h.quantity * h.purchasePrice;
+            try {
+              const price = await getMutualFundPrice(h.schemeCode);
+              const current = h.quantity * price.nav;
+              const ret = invested > 0 ? ((current - invested) / invested) * 100 : 0;
+              return { id: h.id, name: price.scheme_name || `Fund ${h.schemeCode}`, schemeCode: h.schemeCode, category: "Equity", nav: price.nav, units: h.quantity, investedAmount: invested, currentValue: current, xirr: Math.round(ret * 10) / 10 };
+            } catch {
+              const est = invested * 1.08;
+              return { id: h.id, name: `Fund ${h.schemeCode}`, schemeCode: h.schemeCode, category: "Equity", nav: h.purchasePrice * 1.08, units: h.quantity, investedAmount: invested, currentValue: est, xirr: 8 };
+            }
+          })
+        );
+        setFunds(enriched);
+      } catch {
+        setFunds([]);
+      }
+      setLoading(false);
+    };
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="rounded-3xl border border-white/10 bg-black/70 p-6 backdrop-blur-xl flex items-center justify-center h-[400px]">
+        <span className="text-white/40 text-sm">Loading mutual fund holdings…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-3xl border border-white/10 bg-black/70 p-6 backdrop-blur-xl">
@@ -23,8 +73,7 @@ export const FundHoldingsTable = () => {
               <th className="py-4 text-right">NAV</th>
               <th className="py-4 text-right">Units</th>
               <th className="py-4 text-right">Value</th>
-              <th className="py-4 text-right">XIRR</th>
-              <th className="py-4 text-right pr-2">7D Trend</th>
+              <th className="py-4 text-right pr-2">XIRR</th>
             </tr>
           </thead>
           <tbody className="text-sm text-slate-300">
@@ -41,7 +90,7 @@ export const FundHoldingsTable = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-white">{fund.name}</p>
-                      <p className="text-xs text-slate-500">{fund.subCategory}</p>
+                      <p className="text-xs text-slate-500">{fund.schemeCode}</p>
                     </div>
                   </div>
                 </td>
@@ -68,31 +117,14 @@ export const FundHoldingsTable = () => {
                   <div className="font-bold text-white">
                     ₹{fund.currentValue.toLocaleString()}
                   </div>
-                  <div className="text-xs text-green-400">
-                    +₹{(fund.currentValue - fund.investedAmount).toLocaleString()}
+                  <div className={`text-xs ${fund.currentValue >= fund.investedAmount ? "text-green-400" : "text-red-400"}`}>
+                    {fund.currentValue >= fund.investedAmount ? "+" : ""}₹{(fund.currentValue - fund.investedAmount).toLocaleString()}
                   </div>
                 </td>
 
                 {/* XIRR */}
-                <td className="py-4 text-right font-bold text-green-400">
+                <td className="py-4 text-right pr-2 font-bold text-green-400">
                   {fund.xirr}%
-                </td>
-
-                {/* Sparkline Chart */}
-                <td className="py-4 pr-2">
-                  <div className="ml-auto h-10 w-24">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={fund.trend.map((val, i) => ({ i, val }))}>
-                        <Line
-                          type="monotone"
-                          dataKey="val"
-                          stroke={fund.xirr >= 0 ? "#10b981" : "#ef4444"}
-                          strokeWidth={2}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
                 </td>
               </tr>
             ))}

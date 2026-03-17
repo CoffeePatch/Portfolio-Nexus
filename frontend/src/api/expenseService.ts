@@ -66,3 +66,14 @@ export const createExpense = async (
 export const deleteExpense = async (externalId: string): Promise<void> => {
   await expenseClient.delete(`/expense/v1/expenses/${externalId}`);
 };
+
+export const updateExpense = async (
+  externalId: string,
+  dto: ExpenseRequestDto
+): Promise<Expense> => {
+  const response = await expenseClient.put<Expense>(
+    `/expense/v1/expenses/${externalId}`,
+    dto
+  );
+  return response.data;
+};
